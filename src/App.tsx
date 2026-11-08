@@ -6,6 +6,7 @@ import { getAttackDamage, getIncomingDamage, selectWeapon } from './combat.js';
 import { terrainWave } from './terrain.js';
 import { collidesWithBlocks, stepVerticalMotion } from './physics.js';
 import { chunkKey, chunkCoordinate, CHUNK_SIZE } from './chunks.js';
+import { isCaveCell, oreAtDepth } from './caves.js';
 
 type Kind = string;
 type BlockInfo = [id:string, label:string, color:number];
@@ -371,19 +372,19 @@ function App(){
         if(dimension==='sky'&&Math.sqrt(x*x+z*z)>5&&hash(x+worldSeed,z-worldSeed)<.28)continue;
         const t=terrain(x,z);
         add({x,y:t.h,z,kind:t.top as Kind});
-        if(t.h>=-1){add({x,y:t.h-1,z,kind:'dirt'});add({x,y:t.h-2,z,kind:'stone'});}
+        if(t.h>=-1)add({x,y:t.h-1,z,kind:'dirt'});
+        for(let depth=2;depth<=12;depth++){
+          const y=t.h-depth;
+          if(isCaveCell(x,y,z,worldSeed))continue;
+          const mineral=oreAtDepth(x,y,z,worldSeed);
+          add({x,y,z,kind:mineral||'stone'});
+        }
         if(hash(x+worldSeed,z+99)>.985&&Math.abs(x)+Math.abs(z)>5&&t.top==='grass'){
           for(let y=1;y<=3;y++)add({x,y:t.h+y,z,kind:'wood'});
           for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=2;dy<=4;dy++)if(Math.abs(dx)+Math.abs(dz)+Math.abs(dy-3)<5)add({x:x+dx,y:t.h+dy,z:z+dz,kind:'leaf'});
         }
         if(t.biome==='desert'&&hash(x+42,z+12)>.94){for(let y=1;y<=2;y++)add({x,y:t.h+y,z,kind:'cactus'});}
         if(hash(x+5,z+worldSeed)>.992&&t.h<2)add({x,y:t.h+1,z,kind:'ore'});
-        const mineral=hash(x+worldSeed*2,z-77);
-        if(mineral>.997&&t.h<1)add({x,y:t.h-2,z,kind:'gold'});
-        else if(mineral>.989&&t.h<1)add({x,y:t.h-2,z,kind:'crystal'});
-        else if(mineral>.974&&t.h<1)add({x,y:t.h-2,z,kind:'iron'});
-        else if(mineral>.956&&t.h<1)add({x,y:t.h-2,z,kind:'copper'});
-        else if(mineral>.935&&t.h<1)add({x,y:t.h-2,z,kind:'coal'});
       }
       loadedChunksRef.current=Array.from(loadedChunks);
       worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);

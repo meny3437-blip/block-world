@@ -6,6 +6,7 @@ A mobile-first 3D voxel sandbox game built with React, Three.js, TypeScript and 
 
 - Deterministic, world-seed-driven procedural voxel terrain with forest, desert, tundra, highland, shore and dimension-specific terrain.
 - Progressive 16×16 chunk generation around the player; newly explored areas are generated on demand and generated chunk data is included in local saves.
+- Seeded underground cave pockets and depth-based coal, copper, iron, crystal and gold veins.
 - Player movement physics with gravity, grounded jumping, terrain landing and collision against solid voxel blocks.
 - Five dimensions: Overworld, Nether, End, Sky Islands and Deep Ocean.
 - More than 100 block types in the building catalog.
@@ -61,7 +62,7 @@ npm test
 
 ## Quality checks
 
-GitHub Actions runs automated inventory, combat, chest-transfer, terrain-generation, player-physics, voxel collision and chunk-coordinate tests, validates the manual QA plan JSON, and builds the production bundle for pushes and pull requests to `main`.
+GitHub Actions runs automated inventory, combat, chest-transfer, terrain-generation, player-physics, voxel collision and chunk-coordinate and cave-generation tests, validates the manual QA plan JSON, and builds the production bundle for pushes and pull requests to `main`.
 
 `tests/*.test.mjs` contains executable Node.js tests for inventory collection, consumption and crafting, chest transfers, weapon selection, attack damage, armor mitigation, deterministic terrain generation, jump/gravity integration and voxel collision. `tests/tests.json` is the manual gameplay QA plan; those gameplay scenarios still require browser/device testing and are not represented as automated tests.
 

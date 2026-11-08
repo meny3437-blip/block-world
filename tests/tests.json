@@ -526,5 +526,23 @@
       "Run the chunk helper unit tests"
     ],
     "expected": "Positions on either side of zero and exact 16-block boundaries map to the correct chunk."
+  },
+  {
+    "name": "Seeded caves and underground ore veins",
+    "viewport": "desktop and mobile",
+    "covers": [
+      "deterministic cave tunnels",
+      "solid underground walls",
+      "depth-based ore distribution",
+      "caves persist through chunk saves"
+    ],
+    "description": "Explores generated caves and verifies ore types appear at different underground depths.",
+    "steps": [
+      "Generate a new world seed",
+      "Dig below the surface in several biomes",
+      "Compare two worlds using the same seed",
+      "Compare ore locations at shallow and deep levels"
+    ],
+    "expected": "Caves are reproducible for a seed, contain solid stone walls, and expose coal, copper, iron, crystal and gold at varying depths."
   }
 ]
