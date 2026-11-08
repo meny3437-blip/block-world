@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { depositBagIntoChest, withdrawChestToBag } from '../src/chests.js';
+import { breakChestContents, depositBagIntoChest, withdrawChestToBag } from '../src/chests.js';
 
 test('deposit transfers positive item counts and clears the carried bag', () => {
   const bag = { wood: 3, berry: 0, stone: 2 };
