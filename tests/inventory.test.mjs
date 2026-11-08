@@ -53,7 +53,7 @@ test('inventory rejects invalid existing counts before changing state', () => {
 
 test('adding or crafting cannot overflow a safe item count', () => {
   assert.throws(() => addItemToBag({ wood: Number.MAX_SAFE_INTEGER }, 'wood', 1), RangeError);
-  assert.throws(() => craftItemInBag({ plank: Number.MAX_SAFE_INTEGER }, { wood: 1 }, 'plank', 1), RangeError);
+  assert.throws(() => craftItemInBag({ plank: Number.MAX_SAFE_INTEGER, wood: 1 }, { wood: 1 }, 'plank', 1), RangeError);
 });
 
 test('crafting rejects malformed costs before consuming ingredients', () => {
