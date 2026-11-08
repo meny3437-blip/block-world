@@ -283,12 +283,12 @@ function App(){
   const playerPositionRef=useRef({x:0,y:2.1,z:8});
   const bagRef=useRef(bag); bagRef.current=bag;
   const statsRef=useRef(stats); statsRef.current=stats;
-  const addItem=useCallback((item:string,n:number)=>setBag(b=>({...b,[item]:(b[item]||0)+n})),[]);
-  const consume=useCallback((item:string,n:number)=>{let ok=false;setBag(b=>{if((b[item]||0)<n)return b;ok=true;return {...b,[item]:b[item]-n};});return ok;},[]);
+  const addItem=useCallback((item:string,n:number)=>{const current=bagRef.current;const next={...current,[item]:(current[item]||0)+n};bagRef.current=next;setBag(next);},[]);
+  const consume=useCallback((item:string,n:number)=>{const current=bagRef.current;if((current[item]||0)<n)return false;const next={...current,[item]:current[item]-n};bagRef.current=next;setBag(next);return true;},[]);
   const craft=useCallback((r:typeof recipes[number])=>{
     const b=bagRef.current;
     if(Object.entries(r.cost).some(([k,v])=>(b[k]||0)<v)){setNotice('Не вистачає матеріалів для крафту');return;}
-    setBag(old=>{const next={...old};Object.entries(r.cost).forEach(([k,v])=>next[k]=(next[k]||0)-v);next[r.id]=(next[r.id]||0)+r.give;return next;});
+    const next={...b};Object.entries(r.cost).forEach(([k,v])=>next[k]=(next[k]||0)-v);next[r.id]=(next[r.id]||0)+r.give;bagRef.current=next;setBag(next);
     setNotice('Створено: '+r.label);
   },[]);
   const eat=useCallback(()=>{if(!consume('berry',1)&&!consume('meat',1)){setNotice('Немає їжі в рюкзаку');return;}setStats(s=>({...s,hunger:clamp(s.hunger+28),health:clamp(s.health+3)}));setNotice('Ти поїв. Голод зменшився');},[consume]);

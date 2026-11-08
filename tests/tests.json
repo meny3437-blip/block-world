@@ -179,5 +179,24 @@
       "Allow a hostile creature to hit the player and compare damage with and without armor"
     ],
     "expected": "Leather armor is craftable, remains in inventory and reduces hostile creature damage from five to three health points per hit."
+  },
+  {
+    "name": "Consume and collect inventory items without race conditions",
+    "viewport": "mobile",
+    "covers": [
+      "atomic inventory resource consumption",
+      "immediate inventory ref updates",
+      "rapid collection and crafting",
+      "no negative item counts",
+      "food consumption and block placement"
+    ],
+    "description": "Verifies inventory operations stay consistent when collection, crafting, eating and placing happen in quick succession.",
+    "steps": [
+      "Collect multiple blocks and food items",
+      "Quickly craft an item using the collected materials",
+      "Eat food and place a block shortly after crafting",
+      "Open the inventory and inspect all remaining quantities"
+    ],
+    "expected": "Each action immediately updates the shared inventory, no resource is consumed below zero, and rapid actions do not lose or duplicate items."
   }
 ]
