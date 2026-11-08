@@ -49,7 +49,7 @@ npm run build
 npm run preview
 ```
 
-Run automated inventory tests:
+Run automated gameplay logic tests:
 
 ```bash
 npm test
@@ -57,7 +57,7 @@ npm test
 
 ## Quality checks
 
-GitHub Actions runs the automated inventory unit tests and the Vite production build for pushes and pull requests to `main`.
+GitHub Actions runs the automated inventory, combat and chest-transfer tests, validates the manual QA plan JSON, and builds the production bundle for pushes and pull requests to `main`.
 
 `tests/*.test.mjs` contains executable Node.js tests for inventory collection, consumption and crafting, chest transfers, weapon selection, attack damage and armor mitigation. `tests/tests.json` is the manual gameplay QA plan; those gameplay scenarios still require browser/device testing and are not represented as automated tests.
 

@@ -27,7 +27,9 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Run inventory unit tests
+      - name: Run gameplay logic tests
         run: npm test
+      - name: Validate manual QA plan JSON
+        run: node -e "JSON.parse(require('node:fs').readFileSync('tests/tests.json', 'utf8'))"
       - name: Build production bundle
         run: npm run build
