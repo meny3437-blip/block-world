@@ -116,5 +116,27 @@
       "Save progress in two dimensions and reload each"
     ],
     "expected": "Each dimension loads its own generated terrain and restores its own seed, edited blocks, inventory state and player position."
+  },
+  {
+    "name": "Fight hostile creatures and collect mob drops",
+    "viewport": "mobile",
+    "covers": [
+      "six living creature actors",
+      "passive animal drops",
+      "hostile night pursuit",
+      "player attack range and facing",
+      "stamina cost for attacks",
+      "enemy damage cooldown",
+      "mob respawn after defeat"
+    ],
+    "description": "Verifies creatures have combat health, attacks require facing and range, hostile creatures pursue at night, and defeated mobs drop resources.",
+    "steps": [
+      "Enter survival mode and approach a creature",
+      "Face the creature and press the attack button repeatedly",
+      "Defeat a passive creature and inspect the inventory for meat",
+      "Wait until night and allow a hostile creature to approach",
+      "Fight it and verify health decreases only at a controlled interval"
+    ],
+    "expected": "Attacks hit only nearby creatures in front of the player, stamina is consumed, defeated creatures disappear and drop meat (and sometimes leather), hostile creatures pursue and deal controlled damage at night, and defeated creatures respawn after a delay."
   }
 ]

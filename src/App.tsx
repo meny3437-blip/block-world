@@ -363,13 +363,46 @@ function App(){
     const target=()=>{ray.setFromCamera(center,camera);const hit=ray.intersectObjects([...blocks.values()].map(v=>v.mesh));return hit.find(h=>h.distance<7);};
     const breakBlock=()=>{const h=target();if(!h){setNotice('Підійди ближче до ресурсу');return;}const m=h.object as THREE.Mesh;const p=m.position;const k=key(Math.round(p.x),Math.round(p.y),Math.round(p.z));const b=blocks.get(k)?.block;if(!b)return;scene.remove(m);blocks.delete(k);const loot=b.kind==='leaf'||b.kind.endsWith('_leaves')?(Math.random()>.55?'berry':'wood'):b.kind==='grass'?'dirt':b.kind==='ore'?'ore':b.kind==='cactus'?'wood':b.kind.endsWith('_log')?'wood':b.kind;addItem(loot,1);worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);setBroken(v=>v+1);setNotice('Здобуто: '+(names[loot]||loot));};
     const placeBlock=()=>{const h=target();if(!h){setNotice('Наведи приціл на блок');return;}const m=h.object as THREE.Mesh;const n=h.face?.normal.clone().transformDirection(m.matrixWorld)||new THREE.Vector3(0,1,0);const p=m.position.clone().add(n).round();if(blocks.has(key(p.x,p.y,p.z)))return;const kind=selectedRef.current;if(mode==='survival'&&!consume(kind,1)){setNotice('Немає цього блока в рюкзаку');return;}add({x:p.x,y:p.y,z:p.z,kind});worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);setNotice('Блок встановлено');};
-    const attack=()=>{setStats(s=>({...s,stamina:clamp(s.stamina-8)}));setNotice('Ти захищаєшся від небезпеки');};
+    const attack=()=>{
+      if(mode==='survival'&&statsRef.current.stamina<8){setNotice('Замало витривалості для атаки');return;}
+      const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+      let target:MobActor|undefined,best=3.25;
+      for(const actor of mobActors){
+        if(!actor.mesh.visible)continue;
+        const delta=actor.mesh.position.clone().sub(camera.position);delta.y=0;
+        const distance=delta.length();if(distance>best||distance<.01)continue;
+        if(delta.normalize().dot(forward)<.35)continue;
+        target=actor;best=distance;
+      }
+      if(!target){setNotice('Поруч немає істоти — наведися на моба та атакуй');return;}
+      setStats(s=>({...s,stamina:clamp(s.stamina-8)}));
+      target.hp-=34;
+      target.mesh.position.x+=forward.x*.28;target.mesh.position.z+=forward.z*.28;
+      if(target.hp<=0){
+        target.mesh.visible=false;target.respawnAt=elapsed+18;
+        const food=target.hostile?1:2;
+        addItem('meat',food);
+        if(Math.random()>.55)addItem('leather',1);
+        setNotice(`Перемога! Здобуто м'ясо ×${food}${target.hostile?' та досвід бою':''}`);
+      }else setNotice(`Влучання! Здоров'я істоти: ${target.hp}/${target.maxHp}`);
+    };
     const jump=()=>{camera.position.y=Math.min(5,camera.position.y+.65);};
     const portalTarget=dimension==='overworld'?'nether':'overworld';
     const usePortal=()=>{if(camera.position.distanceTo(portal.position)>2.8){setNotice('Підійди до порталу та натисни G');return;}switchDimension(portalTarget);};
     worldRef.current={breakBlock,placeBlock,attack,jump,drink,eat,save,usePortal};
-    // Simple wandering wildlife and hostile night creatures.
-    const mobs:THREE.Mesh[]=[];for(let i=0;i<5;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(.7,.8,.7),new THREE.MeshStandardMaterial({color:i%2?0x9b6a42:0x6e777d}));m.position.set((i-2)*5,.55,-7-i*2);scene.add(m);mobs.push(m);}
+    // Living creatures: passive animals drop food; hostile creatures hunt at night.
+    type MobActor={mesh:THREE.Mesh;hp:number;maxHp:number;hostile:boolean;cooldown:number;respawnAt:number;phase:number};
+    const mobGeometry=new THREE.BoxGeometry(.78,.82,.72);
+    const mobActors:MobActor[]=[];
+    const mobColors=[0x9b6a42,0xd2c0a2,0x66717d,0x4b374f,0x344b3d,0x8b4939];
+    for(let i=0;i<6;i++){
+      const material=new THREE.MeshStandardMaterial({color:mobColors[i],roughness:.86});
+      const mesh=new THREE.Mesh(mobGeometry,material);
+      mesh.position.set((i-2.5)*4,.55,-8-(i%3)*3);
+      mesh.castShadow=true;scene.add(mesh);
+      const maxHp=i<2?45:i===2?70:55;
+      mobActors.push({mesh,hp:maxHp,maxHp,hostile:i>=2,cooldown:0,respawnAt:0,phase:i*1.7});
+    }
     let yaw=0,pitch=0,frame=0,elapsed=0,last=performance.now(),portalNearbyLocal=false;
     const padActionHeld={jump:false,break:false,place:false};
     const onKey=(e:KeyboardEvent,down:boolean)=>{if(down&&e.repeat)return;const v=down?1:0;if(e.code==='KeyW'||e.code==='ArrowUp')controls.current.forward=v;if(e.code==='KeyS'||e.code==='ArrowDown')controls.current.forward=-v;if(e.code==='KeyA'||e.code==='ArrowLeft')controls.current.side=-v;if(e.code==='KeyD'||e.code==='ArrowRight')controls.current.side=v;if(down&&e.code==='Space'){jump();e.preventDefault();}if(down&&e.code==='KeyE')setPanel(p=>p==='bag'?'none':'bag');if(down&&e.code==='KeyF')attack();if(down&&e.code==='KeyG')usePortal();if(down&&e.code.startsWith('Digit')){const n=Number(e.code.slice(5))-1;if(hotbarItems[n]){selectedRef.current=hotbarItems[n];setSelected(hotbarItems[n]);}}};
@@ -386,10 +419,23 @@ function App(){
       const f=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),r=new THREE.Vector3(f.z,0,-f.x);camera.position.addScaledVector(f,-controls.current.forward*dt*5);camera.position.addScaledVector(r,controls.current.side*dt*5);camera.position.y=Math.max(.7,Math.min(7,camera.position.y));playerPositionRef.current={x:camera.position.x,y:camera.position.y,z:camera.position.z};
       const nearPortal=camera.position.distanceTo(portal.position)<2.8;if(nearPortal!==portalNearbyLocal){portalNearbyLocal=nearPortal;setPortalNearby(nearPortal);setNotice(nearPortal?'Портал поруч — натисни кнопку порталу або G':'Досліджуй світ та шукай портал');}portalSurface.rotation.y=Math.sin(elapsed*1.8)*.08;portalSurface.material.opacity=.58+Math.sin(elapsed*2.5)*.14;
       const hour=statsRef.current.hour;const night=hour<6||hour>19;const light=night?.28:Math.max(.55,Math.sin((hour-6)/13*Math.PI)*1.4);sun.intensity=light;hemi.intensity=night?.48:1.7;const daySky=dimension==='nether'?0x542522:dimension==='end'?0x171323:dimension==='sky'?0x9bd8f2:dimension==='ocean'?0x367fa8:0x8cc9f1;scene.background!.set(night&&dimension==='overworld'?0x172743:daySky);scene.fog!.color.set(night&&dimension==='overworld'?0x172743:daySky);
-      mobs.forEach((m,i)=>{m.position.x+=Math.sin(elapsed*.35+i)*dt*.35;m.position.z+=Math.cos(elapsed*.3+i)*dt*.25;if(night&&m.position.distanceTo(camera.position)<2.2&&Math.floor(elapsed*2)%8===0&&mode!=='creative')setStats(s=>({...s,health:clamp(s.health-2)}));});
+      mobActors.forEach((actor)=>{
+        const m=actor.mesh;actor.cooldown=Math.max(0,actor.cooldown-dt);
+        if(!m.visible){if(elapsed>=actor.respawnAt){m.visible=true;actor.hp=actor.maxHp;m.position.set((Math.random()-.5)*18,.55,-10-Math.random()*12);}return;}
+        const dx=camera.position.x-m.position.x,dz=camera.position.z-m.position.z;
+        const distance=Math.hypot(dx,dz);
+        if(actor.hostile&&night&&mode!=='creative'&&distance<15&&distance>.001){
+          m.position.x+=(dx/distance)*dt*.72;m.position.z+=(dz/distance)*dt*.72;
+          if(distance<1.55&&actor.cooldown<=0){actor.cooldown=1.35;setStats(s=>({...s,health:clamp(s.health-5)}));setNotice('На тебе напав ворог! Відбийся кнопкою ⚔');}
+        }else{
+          m.position.x+=Math.sin(elapsed*.35+actor.phase)*dt*.28;
+          m.position.z+=Math.cos(elapsed*.3+actor.phase)*dt*.2;
+        }
+        m.rotation.y=Math.atan2(dx,dz);
+      });
       renderer.render(scene,camera);};
     animate();
-    return()=>{cancelAnimationFrame(frame);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window.removeEventListener('resize',resize);document.removeEventListener('pointermove',pointer);renderer.domElement.removeEventListener('mousedown',mouseAction);renderer.domElement.removeEventListener('contextmenu',noMenu);renderer.dispose();cube.dispose();Object.values(mats).forEach(m=>m.dispose());if(host.contains(renderer.domElement))host.removeChild(renderer.domElement);};
+    return()=>{cancelAnimationFrame(frame);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window.removeEventListener('resize',resize);document.removeEventListener('pointermove',pointer);renderer.domElement.removeEventListener('mousedown',mouseAction);renderer.domElement.removeEventListener('contextmenu',noMenu);renderer.dispose();cube.dispose();mobGeometry.dispose();mobActors.forEach(actor=>{if(actor.mesh.material instanceof THREE.Material)actor.mesh.material.dispose();});Object.values(mats).forEach(m=>m.dispose());if(host.contains(renderer.domElement))host.removeChild(renderer.domElement);};
   },[worldSeed,dimension,mode,worldRevision,addItem,consume,drink,eat,switchDimension]);
 
   const move=(axis:'forward'|'side',v:number)=>{controls.current[axis]=v;};
