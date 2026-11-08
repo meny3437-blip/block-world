@@ -389,7 +389,7 @@ function App(){
       loadedChunksRef.current=Array.from(loadedChunks);
       worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);
     };
-    const loadChunksAround=(cx:number,cz:number)=>{for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){const x=cx+dx,z=cz+dz,id=`${x},${z}`;if(!queuedChunks.has(id)){queuedChunks.add(id);chunkQueue.push({x,z});}}};
+    const loadChunksAround=(cx:number,cz:number)=>{for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){const x=cx+dx,z=cz+dz,id=chunkKey(x,z);addChunkWater(x,z);if(!loadedChunks.has(id)&&!queuedChunks.has(id)){queuedChunks.add(id);chunkQueue.push({x,z});}}};
     if(savedBlocksRef.current){savedBlocksRef.current.forEach(add);savedBlocksRef.current=null;}
     loadChunksAround(chunkCoordinate(playerPositionRef.current.x),chunkCoordinate(playerPositionRef.current.z));
     savedChunksRef.current=null;
