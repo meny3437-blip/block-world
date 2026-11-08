@@ -1,0 +1,98 @@
+[
+  {
+    "name": "Explore procedural biomes and survive the day-night cycle",
+    "sanity": true,
+    "viewport": "desktop",
+    "covers": [
+      "procedural terrain generation",
+      "forest desert tundra highland and shore biomes",
+      "day night lighting cycle",
+      "weather and day clock"
+    ],
+    "description": "Verifies the world contains varied terrain and the visible clock and lighting progress through a survival day.",
+    "steps": [
+      "Open Block World survival",
+      "Explore the terrain around the spawn area",
+      "Observe the day and night clock as time advances"
+    ],
+    "expected": "The 3D world displays varied biomes and the day clock advances while scene lighting changes."
+  },
+  {
+    "name": "Track survival needs and recover by eating on mobile",
+    "viewport": "mobile",
+    "covers": [
+      "health hunger thirst stamina meters",
+      "hunger and thirst depletion",
+      "food consumption",
+      "Minecraft-style left virtual joystick movement",
+      "right-side touch drag camera look",
+      "mobile jump break place and inventory action buttons",
+      "27-slot inventory grid and active hotbar selection",
+      "100-plus placeable block catalog",
+      "creative mode access to all block types",
+      "survival mode requires collected blocks to place"
+    ],
+    "description": "Verifies survival meters, the virtual joystick, and food consumption work on a mobile viewport.",
+    "steps": [
+      "Open the game on a mobile viewport",
+      "Move using the circular on-screen joystick",
+      "Open the backpack and eat berries"
+    ],
+    "expected": "The joystick controls movement, survival meters are visible, and eating consumes a berry and increases hunger."
+  },
+  {
+    "name": "Craft tools, new resources and survival equipment",
+    "viewport": "mobile",
+    "covers": [
+      "inventory resources",
+      "copper iron gold crystal and coal deposits",
+      "crafting recipes and material validation",
+      "campfire fishing rod bow and metal ingot crafting"
+    ],
+    "description": "Verifies expanded mineral resources and new survival recipes are available through gathering and crafting.",
+    "steps": [
+      "Open the crafting panel",
+      "Inspect recipes for a campfire, fishing rod, bow and metal ingot",
+      "Gather mineral blocks and craft an item when ingredients are available"
+    ],
+    "expected": "The new mineral types appear as gatherable resources and new recipes consume materials and add crafted items."
+  },
+  {
+    "name": "Automatically save and restore the complete world",
+    "viewport": "desktop",
+    "covers": [
+      "automatic five second save",
+      "manual save and load",
+      "inventory and survival state persistence",
+      "built and broken block persistence",
+      "offline installable PWA shell"
+    ],
+    "description": "Verifies progress is saved automatically and restored, including edited terrain and player state.",
+    "steps": [
+      "Break or place a block and collect a resource",
+      "Wait for automatic save or use Save",
+      "Reload the game and use Load"
+    ],
+    "expected": "Saved inventory, survival stats and edited world blocks are restored from local device storage."
+  },
+  {
+    "name": "Use keyboard and connected gamepad controls",
+    "viewport": "desktop",
+    "covers": [
+      "WASD keyboard movement",
+      "Minecraft-style WASD movement",
+      "mouse pointer-lock camera look",
+      "left mouse break and right mouse place",
+      "E inventory and 1-9 hotbar selection",
+      "Gamepad API left and right sticks",
+      "gamepad jump break and place buttons"
+    ],
+    "description": "Verifies keyboard and standard browser gamepad inputs are supported on desktop.",
+    "steps": [
+      "Open the game on a desktop viewport",
+      "Move with WASD and use Q and E actions",
+      "Connect a supported gamepad and use its sticks and action buttons"
+    ],
+    "expected": "Keyboard movement and actions respond, and a connected browser-compatible gamepad can move, look, jump, break and place."
+  }
+]
