@@ -125,7 +125,7 @@ type Stats = { health:number; hunger:number; thirst:number; stamina:number; day:
 type Bag = Record<string,number>;
 const STORE = 'block-world-survival-v2';
 const PLAYER_STORE = `${STORE}:player`;
-const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'Сире м’ясо',cooked_meat:'Смажене м’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',bone:'Кістка',arrow:'Стріла',leather_armor:'Шкіряна броня',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
+const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'Сире м’ясо',cooked_meat:'Смажене м’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',bone:'Кістка',dragon_scale:'Луска дракона',arrow:'Стріла',leather_armor:'Шкіряна броня',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
   oak_planks:'Дубові дошки',
   birch_planks:'Березові дошки',
   spruce_planks:'Ялинові дошки',
@@ -396,11 +396,12 @@ function App(){
       target.hp-=damage;
       if(!ranged){target.mesh.position.x+=forward.x*.28;target.mesh.position.z+=forward.z*.28;}
       if(target.hp<=0){
-        target.mesh.visible=false;target.respawnAt=elapsed+18;
-        const food=target.hostile?1:2;
+        target.mesh.visible=false;target.respawnAt=elapsed+(target.boss?90:18);
+        const food=target.boss?3:target.hostile?1:2;
         addItem('meat',food);
-        if(Math.random()>.45)addItem(target.hostile?'bone':'leather',1);
-        setNotice(`Перемога над істотою «${target.name}»! Здобуто м'ясо ×${food}`);
+        if(target.boss){addItem('dragon_scale',2);addItem('crystal',3);}
+        else if(Math.random()>.45)addItem(target.hostile?'bone':'leather',1);
+        setNotice(`Перемога над істотою «${target.name}»! Здобуто м'ясо ×${food}${target.boss?' та луску дракона ×2':''}`);
       }else setNotice(`Влучання по «${target.name}» (${names[weapon]||'рукою'})! Здоров'я: ${target.hp}/${target.maxHp}`);
     };
     const jump=()=>{camera.position.y=Math.min(5,camera.position.y+.65);};
@@ -408,20 +409,21 @@ function App(){
     const usePortal=()=>{if(camera.position.distanceTo(portal.position)>2.8){setNotice('Підійди до порталу та натисни G');return;}switchDimension(portalTarget);};
     worldRef.current={breakBlock,placeBlock,attack,jump,drink,eat,save,usePortal};
     // Distinct low-poly animals and monsters. Passive creatures provide food; hostile ones hunt at night.
-    type MobActor={mesh:THREE.Group;name:string;hp:number;maxHp:number;hostile:boolean;cooldown:number;respawnAt:number;phase:number};
+    type MobActor={mesh:THREE.Group;name:string;hp:number;maxHp:number;hostile:boolean;boss:boolean;cooldown:number;respawnAt:number;phase:number};
     const mobBodyGeometry=new THREE.BoxGeometry(.78,.52,.48);
     const mobHeadGeometry=new THREE.BoxGeometry(.42,.42,.42);
     const mobLegGeometry=new THREE.BoxGeometry(.17,.38,.17);
     const mobEyeGeometry=new THREE.BoxGeometry(.09,.09,.05);
-    const mobGeometries=[mobBodyGeometry,mobHeadGeometry,mobLegGeometry,mobEyeGeometry];
+    const mobWingGeometry=new THREE.BoxGeometry(.16,.12,1.15);
+    const mobGeometries=[mobBodyGeometry,mobHeadGeometry,mobLegGeometry,mobEyeGeometry,mobWingGeometry];
     const mobActors:MobActor[]=[];
     const mobMaterials:THREE.Material[]=[];
-    const mobNames=['Корова','Вівця','Свиня','Зомбі','Скелет','Павук'];
-    const mobColors=[0x79543a,0xe1d8c7,0xd58d9b,0x4b8b55,0x9ca4a8,0x4c3934];
+    const mobNames=['Корова','Вівця','Свиня','Зомбі','Скелет','Павук','Дракон Краю'];
+    const mobColors=[0x79543a,0xe1d8c7,0xd58d9b,0x4b8b55,0x9ca4a8,0x4c3934,0x42205e];
     const hostileEyes=new THREE.MeshStandardMaterial({color:0xff3028,emissive:0x6b0808});
     const passiveEyes=new THREE.MeshStandardMaterial({color:0x181818});
     mobMaterials.push(hostileEyes,passiveEyes);
-    for(let i=0;i<6;i++){
+    for(let i=0;i<(dimension==='end'?7:6);i++){
       const material=new THREE.MeshStandardMaterial({color:mobColors[i],roughness:.86});mobMaterials.push(material);
       const mesh=new THREE.Group();
       const body=new THREE.Mesh(mobBodyGeometry,material);body.position.y=.55;mesh.add(body);
@@ -432,11 +434,12 @@ function App(){
       if(i===1)mesh.scale.set(1.12,1.08,1.12);
       if(i===2)mesh.scale.set(.92,.88,.92);
       if(i===5)mesh.scale.set(1.22,.7,1.3);
-      mesh.position.set((i-2.5)*4,.05,-8-(i%3)*3);
+      if(i===6){mesh.scale.set(2.7,1.8,2.7);for(const side of [-1,1]){const wing=new THREE.Mesh(mobWingGeometry,material);wing.position.set(side*.58,.92,.05);wing.rotation.z=side*.18;mesh.add(wing);}}
+      mesh.position.set(i===6?0:(i-2.5)*4,i===6?1.2:.05,i===6?-20:-8-(i%3)*3);
       mesh.traverse(part=>{if(part instanceof THREE.Mesh)part.castShadow=true;});
       scene.add(mesh);
-      const maxHp=[50,45,40,70,55,60][i];
-      mobActors.push({mesh,name:mobNames[i],hp:maxHp,maxHp,hostile:i>=3,cooldown:0,respawnAt:0,phase:i*1.7});
+      const maxHp=i===6?240:[50,45,40,70,55,60][i];
+      mobActors.push({mesh,name:mobNames[i],hp:maxHp,maxHp,hostile:i>=3,boss:i===6,cooldown:0,respawnAt:0,phase:i*1.7});
     }
     let yaw=0,pitch=0,frame=0,elapsed=0,last=performance.now(),portalNearbyLocal=false,respawning=false;
     const padActionHeld={jump:false,break:false,place:false};
@@ -458,12 +461,12 @@ function App(){
       const hour=statsRef.current.hour;const night=hour<6||hour>19;const light=night?.28:Math.max(.55,Math.sin((hour-6)/13*Math.PI)*1.4);sun.intensity=light;hemi.intensity=night?.48:1.7;const daySky=dimension==='nether'?0x542522:dimension==='end'?0x171323:dimension==='sky'?0x9bd8f2:dimension==='ocean'?0x367fa8:0x8cc9f1;scene.background!.set(night&&dimension==='overworld'?0x172743:daySky);scene.fog!.color.set(night&&dimension==='overworld'?0x172743:daySky);
       mobActors.forEach((actor)=>{
         const m=actor.mesh;actor.cooldown=Math.max(0,actor.cooldown-dt);
-        if(!m.visible){if(elapsed>=actor.respawnAt){m.visible=true;actor.hp=actor.maxHp;m.position.set((Math.random()-.5)*18,.55,-10-Math.random()*12);}return;}
+        if(!m.visible){if(elapsed>=actor.respawnAt){m.visible=true;actor.hp=actor.maxHp;m.position.set(actor.boss?0:(Math.random()-.5)*18,actor.boss?1.2:.05,actor.boss?-20:-10-Math.random()*12);}return;}
         const dx=camera.position.x-m.position.x,dz=camera.position.z-m.position.z;
         const distance=Math.hypot(dx,dz);
-        if(actor.hostile&&night&&mode!=='creative'&&distance<15&&distance>.001){
-          m.position.x+=(dx/distance)*dt*.72;m.position.z+=(dz/distance)*dt*.72;
-          if(distance<1.55&&actor.cooldown<=0){actor.cooldown=1.35;const damage=bagRef.current.leather_armor?3:5;setStats(s=>({...s,health:clamp(s.health-damage)}));setNotice(bagRef.current.leather_armor?'Броня послабила удар ворога! Відбийся кнопкою ⚔':'На тебе напав ворог! Відбийся кнопкою ⚔');}
+        if(actor.hostile&&(actor.boss||night)&&mode!=='creative'&&distance<(actor.boss?30:15)&&distance>.001){
+          const speed=actor.boss?1.05:.72;m.position.x+=(dx/distance)*dt*speed;m.position.z+=(dz/distance)*dt*speed;
+          if(distance<(actor.boss?2.5:1.55)&&actor.cooldown<=0){actor.cooldown=actor.boss?2.1:1.35;const damage=bagRef.current.leather_armor?(actor.boss?7:3):(actor.boss?12:5);setStats(s=>({...s,health:clamp(s.health-damage)}));setNotice(actor.boss?'Дракон Краю атакує! Ухиляйся та бий мечем ⚔':bagRef.current.leather_armor?'Броня послабила удар ворога! Відбийся кнопкою ⚔':'На тебе напав ворог! Відбийся кнопкою ⚔');}
         }else{
           m.position.x+=Math.sin(elapsed*.35+actor.phase)*dt*.28;
           m.position.z+=Math.cos(elapsed*.3+actor.phase)*dt*.2;

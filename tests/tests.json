@@ -283,5 +283,27 @@
       "Use all arrows and verify attacks return to melee range"
     ],
     "expected": "A crafted bow plus at least one arrow enables a 12-unit directional attack dealing 36 damage; each successful hit consumes exactly one arrow, while empty ammunition falls back to normal melee range."
+  },
+  {
+    "name": "Defeat the Ender Dragon boss in the End dimension",
+    "viewport": "desktop",
+    "covers": [
+      "End-only boss spawn",
+      "large dragon model with wings",
+      "boss health pool",
+      "persistent aggressive boss AI",
+      "high-damage boss attack",
+      "dragon scale and crystal rewards",
+      "boss respawn cooldown"
+    ],
+    "description": "Verifies the End dimension contains a unique boss encounter with a large health pool, stronger attacks and exclusive rewards.",
+    "steps": [
+      "Travel to the End dimension",
+      "Locate the large Ender Dragon boss near the distant island",
+      "Craft and carry a strong sword, bow and leather armor",
+      "Fight the boss while avoiding its attacks",
+      "Defeat it and inspect the inventory for dragon scales and crystals"
+    ],
+    "expected": "A 240-health Ender Dragon spawns only in the End, actively pursues and attacks the player, takes damage from melee weapons and arrows, drops meat, dragon scales and crystals when defeated, and respawns only after a long cooldown."
   }
 ]
