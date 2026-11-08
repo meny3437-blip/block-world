@@ -267,7 +267,7 @@ function App(){
   const [panel,setPanel]=useState<'none'|'bag'|'craft'|'map'>('none');
   const [mode,setMode]=useState<'survival'|'creative'>('survival');
   const [broken,setBroken]=useState(0);
-  const [worldSeed]=useState(()=>Math.floor(Math.random()*999999));
+  const [worldSeed]=useState(()=>{try{const saved=JSON.parse(localStorage.getItem(STORE)||'null');return Number.isFinite(saved?.worldSeed)?saved.worldSeed:Math.floor(Math.random()*999999);}catch{return Math.floor(Math.random()*999999);}});
   const [worldRevision,setWorldRevision]=useState(0);
   const worldBlocksRef=useRef<Block[]>([]);
   const savedBlocksRef=useRef<Block[]|null>(null);
