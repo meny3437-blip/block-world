@@ -15,6 +15,7 @@ A mobile-first 3D voxel sandbox game built with React, Three.js, TypeScript and 
 - Portal travel, independently saved dimension terrain and shared player inventory.
 - Passive animals and hostile monsters with creature health, drops, night pursuit and respawning.
 - Craftable wooden, stone and iron swords; bow and arrows; leather armor.
+- Metal smelting: copper, iron and gold ores produce separate ingots; iron weapons and armor require iron ingots.
 - Ender Dragon boss encounter in the End with a live boss health bar, and dragon armor crafted from its scales.
 
 ## Controls
