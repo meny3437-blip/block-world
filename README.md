@@ -1,46 +1,39 @@
 # Block World
 
-A mobile-first 3D voxel sandbox built with React, TypeScript, Three.js and Vite.
+A mobile-first 3D voxel sandbox game built with React, Three.js, TypeScript and Vite.
 
-## Features
+## Current game systems
 
-- Procedurally generated voxel terrain with varied biomes.
-- Five explorable dimensions: Overworld, Nether, End, Sky Islands and Deep Ocean.
-- Independent world seeds, edited blocks and player positions per dimension.
-- Shared player inventory and survival profile across dimensions.
-- Survival and Creative modes with health, hunger, thirst and stamina.
-- Automatic local saves, manual save/load and position restoration.
-- Mobile touch joystick, touch camera controls and action buttons.
-- Desktop keyboard/mouse controls and browser gamepad support.
-- Crafting recipes for building materials, tools, weapons, armor, campfires and food.
-- Six low-poly creature types: cow, sheep, pig, zombie, skeleton and spider.
-- Hostile creature pursuit at night, melee combat, bow attacks, loot and respawning.
-- Three sword tiers, leather armor and cooked-meat nutrition.
-- Portal travel between dimensions.
+- Procedural voxel terrain with forest, desert, tundra, highland, shore and dimension-specific terrain.
+- Five dimensions: Overworld, Nether, End, Sky Islands and Deep Ocean.
+- More than 100 block types in the building catalog.
+- Survival and Creative modes with health, hunger, thirst, stamina, weather and a day/night cycle.
+- 27-slot inventory, hotbar, crafting recipes, resource collection and local autosave.
+- Touch joystick, touch camera controls, mobile action buttons, keyboard/mouse and browser gamepad support.
+- Portal travel, independently saved dimension terrain and shared player inventory.
+- Passive animals and hostile monsters with creature health, drops, night pursuit and respawning.
+- Craftable wooden, stone and iron swords; bow and arrows; leather armor.
+- Ender Dragon boss encounter in the End and dragon armor crafted from its scales.
 
 ## Controls
 
-### Desktop
-- WASD: move
-- Mouse: look around
-- Left mouse button: break a block
-- Right mouse button: place a block
-- E: inventory
-- 1–9: select hotbar slot
-- Space: jump
-- G: use a nearby portal
+| Action | Desktop | Mobile |
+|---|---|---|
+| Move | WASD / arrow keys | Left virtual joystick |
+| Look | Mouse | Drag on the right side of the world |
+| Break block | Left mouse button | Pickaxe button |
+| Place block | Right mouse button | Block button |
+| Jump | Space | Up-arrow button |
+| Attack / shoot | F | Sword button |
+| Inventory | E | Backpack button |
+| Portal | G | Portal button when nearby |
+| Select hotbar | 1–9 | Tap a hotbar slot |
 
-### Mobile
-- Left virtual joystick: move
-- Drag the right side of the screen: look around
-- On-screen action controls: jump, break, place, attack and interact
-- Use the portal button when close to a portal
-
-A compatible browser gamepad is also supported.
+A bow with arrows in the inventory enables ranged attacks. The strongest available sword is selected automatically. Armor is applied automatically, with dragon armor taking priority over leather armor.
 
 ## Run locally
 
-Requirements: Node.js 22 or later and npm.
+Requirements: Node.js 22 or newer.
 
 ```bash
 npm install
@@ -54,22 +47,18 @@ npm run build
 npm run preview
 ```
 
-Run automated unit tests:
+Run automated inventory tests:
 
 ```bash
 npm test
 ```
 
-## Continuous integration
+## Quality checks
 
-GitHub Actions runs the inventory unit tests and builds the production bundle on pushes and pull requests to `main`.
+GitHub Actions runs the automated inventory unit tests and the Vite production build for pushes and pull requests to `main`.
 
-The current automated unit tests cover inventory addition, consumption, crafting atomicity and invalid quantities. The broader gameplay scenarios in `tests/tests.json` are a manual QA plan; they are not automated browser tests.
+`tests/inventory.test.mjs` contains executable Node.js tests for inventory collection, consumption and crafting. `tests/tests.json` is the manual gameplay QA plan; those gameplay scenarios still require browser/device testing and are not represented as automated tests.
 
 ## Save data
 
-World and player progress are stored locally in the browser on the device being used. Clearing browser storage or using a different device/browser can remove or hide local saves. There is currently no cloud account or cross-device save synchronization.
-
-## Project status
-
-Block World is an actively developed sandbox prototype. The listed features are implemented in the codebase, but this project is not a complete feature-for-feature Minecraft replacement. Gameplay, balancing, performance and mobile/desktop compatibility still require ongoing hands-on testing.
+Worlds and player progress are stored locally in the browser. Each dimension has its own world seed, terrain edits and player position. Player inventory and survival stats are shared across dimensions. Clearing browser site data can remove local saves.
