@@ -362,12 +362,14 @@ function App(){
     const loadedChunks=new Set<string>(savedChunksRef.current||[]);
     loadedChunksRef.current=Array.from(loadedChunks);
     const waterGeometry=new THREE.BoxGeometry(1,.18,1);
+    const waterChunks=new Set<string>();
     const chunkQueue:{x:number;z:number;nextColumn:number}[]=[];
     const queuedChunks=new Set<string>();
     const addChunkWaterColumn=(cx:number,cz:number,x:number)=>{for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){if(terrain(x,z).h < -1){const w=new THREE.Mesh(waterGeometry,mats.water);w.position.set(x,-.42,z);scene.add(w);}}};
     const generateChunk=(cx:number,cz:number,nextColumn=0)=>{
       const chunkId=chunkKey(cx,cz);
       const alreadyLoaded=loadedChunks.has(chunkId);
+      if(alreadyLoaded&&waterChunks.has(chunkId))return true;
       const range=chunkColumnRange(cx,nextColumn,1);
       for(let x=range.start;x<range.end;x++){
         addChunkWaterColumn(cx,cz,x);
@@ -392,6 +394,7 @@ function App(){
         }
       }
       if(!range.complete)return false;
+      waterChunks.add(chunkId);
       if(!alreadyLoaded){
         loadedChunks.add(chunkId);
         loadedChunksRef.current=Array.from(loadedChunks);
@@ -399,7 +402,7 @@ function App(){
       }
       return true;
     };
-    const loadChunksAround=(cx:number,cz:number)=>{for(const chunk of chunkNeighborhood(cx,cz)){const {x,z,key:id}=chunk;if(!queuedChunks.has(id)){queuedChunks.add(id);chunkQueue.push({x,z,nextColumn:0});}}};
+    const loadChunksAround=(cx:number,cz:number)=>{for(const chunk of chunkNeighborhood(cx,cz)){const {x,z,key:id}=chunk;if((!loadedChunks.has(id)||!waterChunks.has(id))&&!queuedChunks.has(id)){queuedChunks.add(id);chunkQueue.push({x,z,nextColumn:0});}}};
     if(savedBlocksRef.current){savedBlocksRef.current.forEach(add);savedBlocksRef.current=null;}
     loadChunksAround(chunkCoordinate(playerPositionRef.current.x),chunkCoordinate(playerPositionRef.current.z));
     savedChunksRef.current=null;
