@@ -159,5 +159,25 @@
       "Save and reload, then confirm the weapon remains in inventory"
     ],
     "expected": "The workshop crafts three sword tiers; melee attacks automatically use the strongest sword in inventory, with iron dealing the most damage, stone intermediate damage, wood lower damage and unarmed attacks the least."
+  },
+  {
+    "name": "Craft leather armor and reduce hostile damage",
+    "viewport": "mobile",
+    "covers": [
+      "leather drop collection",
+      "leather armor recipe",
+      "automatic armor mitigation",
+      "equipment status in inventory",
+      "armor persistence"
+    ],
+    "description": "Verifies players can craft leather armor from mob drops and metal ingots and receive reduced damage from hostile mobs.",
+    "steps": [
+      "Defeat creatures until enough leather is collected",
+      "Collect or craft a metal ingot",
+      "Craft leather armor in the workshop",
+      "Open inventory and verify armor is shown as equipped",
+      "Allow a hostile creature to hit the player and compare damage with and without armor"
+    ],
+    "expected": "Leather armor is craftable, remains in inventory and reduces hostile creature damage from five to three health points per hit."
   }
 ]
