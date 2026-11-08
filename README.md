@@ -48,6 +48,7 @@ npm run dev
 Create a production build:
 
 ```bash
+npm run typecheck
 npm run build
 npm run preview
 ```
