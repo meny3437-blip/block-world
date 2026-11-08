@@ -294,7 +294,9 @@ function App(){
   const [worldSeed,setWorldSeed]=useState(()=>{try{const saved=JSON.parse(localStorage.getItem(STORE)||'null');return Number.isFinite(saved?.worldSeed)?saved.worldSeed:Math.floor(Math.random()*999999);}catch{return Math.floor(Math.random()*999999);}});
   const [worldRevision,setWorldRevision]=useState(0);
   const worldBlocksRef=useRef<Block[]>([]);
+  const loadedChunksRef=useRef<string[]>([]);
   const savedBlocksRef=useRef<Block[]|null>(null);
+  const savedChunksRef=useRef<string[]|null>(null);
   const playerPositionRef=useRef({x:0,y:2.1,z:8});
   const bagRef=useRef(bag); bagRef.current=bag;
   const statsRef=useRef(stats); statsRef.current=stats;
@@ -314,18 +316,18 @@ function App(){
     setNotice(food==='cooked_meat'?'Смажене м’ясо відновило сили!':food==='meat'?'Ти з’їв сире м’ясо':'Ти з’їв ягоди');
   },[consume]);
   const drink=useCallback(()=>{setStats(s=>({...s,thirst:clamp(s.thirst+35)}));setNotice('Ти напився води');},[]);
-  const save=useCallback(()=>{try{const data={bag:bagRef.current,stats:statsRef.current,worldSeed,mode,broken,blocks:worldBlocksRef.current,playerPosition:playerPositionRef.current,chestStorage:chestRef.current};localStorage.setItem(storageKey,JSON.stringify(data));localStorage.setItem(PLAYER_STORE,JSON.stringify({bag:bagRef.current,stats:statsRef.current,mode}));setNotice('Світ та всі зміни збережено на цьому пристрої');}catch{setNotice('Не вдалося зберегти світ');}},[worldSeed,mode,broken,storageKey]);
-  const load=useCallback(()=>{try{const raw=localStorage.getItem(storageKey);if(!raw){setNotice('Збереження ще немає');return;}const d=JSON.parse(raw);const profile=JSON.parse(localStorage.getItem(PLAYER_STORE)||'null');if(profile?.bag)setBag(profile.bag);else if(d.bag)setBag(d.bag);if(profile?.stats)setStats(profile.stats);else if(d.stats)setStats(d.stats);if(profile?.mode)setMode(profile.mode);else if(d.mode)setMode(d.mode);if(Array.isArray(d.blocks))savedBlocksRef.current=d.blocks;chestRef.current=d.chestStorage&&typeof d.chestStorage==='object'?d.chestStorage:{};setChestStorage(chestRef.current);if(d.playerPosition&&[d.playerPosition.x,d.playerPosition.y,d.playerPosition.z].every(Number.isFinite))playerPositionRef.current={x:d.playerPosition.x,y:d.playerPosition.y,z:d.playerPosition.z};setBroken(d.broken||0);setWorldRevision(v=>v+1);setNotice('Світ, побудовані блоки та інвентар відновлено');}catch{setNotice('Помилка читання збереження');}},[storageKey]);
+  const save=useCallback(()=>{try{const data={bag:bagRef.current,stats:statsRef.current,worldSeed,mode,broken,blocks:worldBlocksRef.current,chunks:loadedChunksRef.current,playerPosition:playerPositionRef.current,chestStorage:chestRef.current};localStorage.setItem(storageKey,JSON.stringify(data));localStorage.setItem(PLAYER_STORE,JSON.stringify({bag:bagRef.current,stats:statsRef.current,mode}));setNotice('Світ та всі зміни збережено на цьому пристрої');}catch{setNotice('Не вдалося зберегти світ');}},[worldSeed,mode,broken,storageKey]);
+  const load=useCallback(()=>{try{const raw=localStorage.getItem(storageKey);if(!raw){setNotice('Збереження ще немає');return;}const d=JSON.parse(raw);const profile=JSON.parse(localStorage.getItem(PLAYER_STORE)||'null');if(profile?.bag)setBag(profile.bag);else if(d.bag)setBag(d.bag);if(profile?.stats)setStats(profile.stats);else if(d.stats)setStats(d.stats);if(profile?.mode)setMode(profile.mode);else if(d.mode)setMode(d.mode);if(Array.isArray(d.blocks))savedBlocksRef.current=d.blocks;savedChunksRef.current=Array.isArray(d.chunks)?d.chunks:null;chestRef.current=d.chestStorage&&typeof d.chestStorage==='object'?d.chestStorage:{};setChestStorage(chestRef.current);if(d.playerPosition&&[d.playerPosition.x,d.playerPosition.y,d.playerPosition.z].every(Number.isFinite))playerPositionRef.current={x:d.playerPosition.x,y:d.playerPosition.y,z:d.playerPosition.z};setBroken(d.broken||0);setWorldRevision(v=>v+1);setNotice('Світ, побудовані блоки та інвентар відновлено');}catch{setNotice('Помилка читання збереження');}},[storageKey]);
   const switchDimension=useCallback((next:'overworld'|'nether'|'end'|'sky'|'ocean')=>{
     if(next===dimension)return;
-    try{localStorage.setItem(storageKey,JSON.stringify({bag:bagRef.current,stats:statsRef.current,worldSeed,mode,broken,blocks:worldBlocksRef.current,playerPosition:playerPositionRef.current,chestStorage:chestRef.current}));}catch{}
+    try{localStorage.setItem(storageKey,JSON.stringify({bag:bagRef.current,stats:statsRef.current,worldSeed,mode,broken,blocks:worldBlocksRef.current,chunks:loadedChunksRef.current,playerPosition:playerPositionRef.current,chestStorage:chestRef.current}));}catch{}
     const nextKey=next==='overworld'?STORE:`${STORE}:${next}`;let saved:any=null;try{saved=JSON.parse(localStorage.getItem(nextKey)||'null');}catch{}
-    if(saved){chestRef.current=saved.chestStorage&&typeof saved.chestStorage==='object'?saved.chestStorage:{};setChestStorage(chestRef.current);savedBlocksRef.current=Array.isArray(saved.blocks)?saved.blocks:null;if(saved.playerPosition&&[saved.playerPosition.x,saved.playerPosition.y,saved.playerPosition.z].every(Number.isFinite))playerPositionRef.current=saved.playerPosition;setBroken(saved.broken||0);setWorldSeed(Number.isFinite(saved.worldSeed)?saved.worldSeed:Math.floor(Math.random()*999999));}
-    else{chestRef.current={};setChestStorage({});savedBlocksRef.current=null;worldBlocksRef.current=[];playerPositionRef.current={x:0,y:2.1,z:8};setBroken(0);setWorldSeed(Math.floor(Math.random()*999999));}
+    if(saved){chestRef.current=saved.chestStorage&&typeof saved.chestStorage==='object'?saved.chestStorage:{};setChestStorage(chestRef.current);savedBlocksRef.current=Array.isArray(saved.blocks)?saved.blocks:null;savedChunksRef.current=Array.isArray(saved.chunks)?saved.chunks:null;if(saved.playerPosition&&[saved.playerPosition.x,saved.playerPosition.y,saved.playerPosition.z].every(Number.isFinite))playerPositionRef.current=saved.playerPosition;setBroken(saved.broken||0);setWorldSeed(Number.isFinite(saved.worldSeed)?saved.worldSeed:Math.floor(Math.random()*999999));}
+    else{chestRef.current={};setChestStorage({});savedBlocksRef.current=null;savedChunksRef.current=null;loadedChunksRef.current=[];worldBlocksRef.current=[];playerPositionRef.current={x:0,y:2.1,z:8};setBroken(0);setWorldSeed(Math.floor(Math.random()*999999));}
     setPanel('none');setActiveChest(null);setDimension(next);setWorldRevision(v=>v+1);setNotice('Вимір: '+dimensionNames[next]);
   },[dimension,storageKey,worldSeed,mode,broken]);
   useEffect(()=>{const timer=window.setInterval(()=>setStats(s=>{const h=(s.hour+0.035)%24;const day=s.day+(h<s.hour?1:0);const hungry=mode==='creative'?s.hunger:clamp(s.hunger-0.11);const thirsty=mode==='creative'?s.thirst:clamp(s.thirst-0.16);let health=s.health;if(mode==='survival'&&(hungry===0||thirsty===0))health=clamp(health-0.6);return {...s,hour:h,day,hunger:hungry,thirst:thirsty,health,stamina:clamp(s.stamina+0.5),weather:Math.floor(h*10)%37===0?'Дощ':(Math.floor(h*10)%37===1?'Хмарно':s.weather)};}),1000);return()=>clearInterval(timer);},[mode]);
-  useEffect(()=>{const persist=()=>{try{localStorage.setItem(storageKey,JSON.stringify({bag:bagRef.current,stats:statsRef.current,worldSeed,mode,broken,blocks:worldBlocksRef.current,playerPosition:playerPositionRef.current,chestStorage:chestRef.current}));localStorage.setItem(PLAYER_STORE,JSON.stringify({bag:bagRef.current,stats:statsRef.current,mode}));}catch{}};const timer=window.setInterval(persist,5000);window.addEventListener('pagehide',persist);return()=>{clearInterval(timer);window.removeEventListener('pagehide',persist);};},[worldSeed,mode,broken,storageKey]);
+  useEffect(()=>{const persist=()=>{try{localStorage.setItem(storageKey,JSON.stringify({bag:bagRef.current,stats:statsRef.current,worldSeed,mode,broken,blocks:worldBlocksRef.current,chunks:loadedChunksRef.current,playerPosition:playerPositionRef.current,chestStorage:chestRef.current}));localStorage.setItem(PLAYER_STORE,JSON.stringify({bag:bagRef.current,stats:statsRef.current,mode}));}catch{}};const timer=window.setInterval(persist,5000);window.addEventListener('pagehide',persist);return()=>{clearInterval(timer);window.removeEventListener('pagehide',persist);};},[worldSeed,mode,broken,storageKey]);
 
   useEffect(()=>{
     const host=mount.current;if(!host)return;
@@ -344,7 +346,7 @@ function App(){
     };
     extraBlockCatalog.forEach(info=>{mats[info[0]]=new THREE.MeshStandardMaterial({color:info[2]});});
     const cube=new THREE.BoxGeometry(1,1,1);const blocks=new Map<string,{mesh:THREE.Mesh;block:Block}>();
-    const add=(b:Block)=>{const m=new THREE.Mesh(cube,mats[b.kind]);m.position.set(b.x,b.y,b.z);m.castShadow=false;m.receiveShadow=false;scene.add(m);blocks.set(key(b.x,b.y,b.z),{mesh:m,block:b});};
+    const add=(b:Block)=>{const id=key(b.x,b.y,b.z);if(blocks.has(id))return;const m=new THREE.Mesh(cube,mats[b.kind]||mats.stone);m.position.set(b.x,b.y,b.z);m.castShadow=false;m.receiveShadow=false;scene.add(m);blocks.set(id,{mesh:m,block:b});};
     const terrain=(x:number,z:number)=>{
       const d=Math.sqrt(x*x+z*z), wave=terrainWave(x,z,worldSeed);
       const h=Math.floor(wave+(d>14?Math.sin(x*.43)*Math.cos(z*.37)*3:0));
@@ -354,29 +356,40 @@ function App(){
       if(dimension==='ocean')return {h:Math.min(-2,h-3),top:'sand',biome:'ocean'};
       return {h:dimension==='sky'?h+8:h,top:desert||beach?'sand':snowy?'snow':'grass',biome:dimension==='sky'?'sky':desert?'desert':snowy?'tundra':d>14?'highland':'forest'};
     };
-    for(let x=-23;x<=23;x++)for(let z=-23;z<=23;z++){
-      if(dimension==='sky'&&Math.sqrt(x*x+z*z)>5&&hash(x+worldSeed,z-worldSeed)<.28)continue;
-      const t=terrain(x,z);
-      if(t.h < -1){const w=new THREE.Mesh(new THREE.BoxGeometry(1,.18,1),mats.water);w.position.set(x,-.42,z);scene.add(w);}
-      add({x,y:t.h,z,kind:t.top as Kind});
-      if(t.h>=-1){add({x,y:t.h-1,z,kind:'dirt'});add({x,y:t.h-2,z,kind:'stone'});}
-      if(hash(x+worldSeed,z+99)>.985&&Math.abs(x)+Math.abs(z)>5&&t.top==='grass'){
-        for(let y=1;y<=3;y++)add({x,y:t.h+y,z,kind:'wood'});
-        for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=2;dy<=4;dy++)if(Math.abs(dx)+Math.abs(dz)+Math.abs(dy-3)<5)add({x:x+dx,y:t.h+dy,z:z+dz,kind:'leaf'});
+    const CHUNK_SIZE=16;
+    const loadedChunks=new Set<string>(savedChunksRef.current||[]);
+    const generateChunk=(cx:number,cz:number)=>{
+      const chunkId=`${cx},${cz}`;if(loadedChunks.has(chunkId))return;
+      loadedChunks.add(chunkId);
+      for(let x=cx*CHUNK_SIZE;x<(cx+1)*CHUNK_SIZE;x++)for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){
+        if(dimension==='sky'&&Math.sqrt(x*x+z*z)>5&&hash(x+worldSeed,z-worldSeed)<.28)continue;
+        const t=terrain(x,z);
+        if(t.h < -1){const w=new THREE.Mesh(new THREE.BoxGeometry(1,.18,1),mats.water);w.position.set(x,-.42,z);scene.add(w);}
+        add({x,y:t.h,z,kind:t.top as Kind});
+        if(t.h>=-1){add({x,y:t.h-1,z,kind:'dirt'});add({x,y:t.h-2,z,kind:'stone'});}
+        if(hash(x+worldSeed,z+99)>.985&&Math.abs(x)+Math.abs(z)>5&&t.top==='grass'){
+          for(let y=1;y<=3;y++)add({x,y:t.h+y,z,kind:'wood'});
+          for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=2;dy<=4;dy++)if(Math.abs(dx)+Math.abs(dz)+Math.abs(dy-3)<5)add({x:x+dx,y:t.h+dy,z:z+dz,kind:'leaf'});
+        }
+        if(t.biome==='desert'&&hash(x+42,z+12)>.94){for(let y=1;y<=2;y++)add({x,y:t.h+y,z,kind:'cactus'});}
+        if(hash(x+5,z+worldSeed)>.992&&t.h<2)add({x,y:t.h+1,z,kind:'ore'});
+        const mineral=hash(x+worldSeed*2,z-77);
+        if(mineral>.997&&t.h<1)add({x,y:t.h-2,z,kind:'gold'});
+        else if(mineral>.989&&t.h<1)add({x,y:t.h-2,z,kind:'crystal'});
+        else if(mineral>.974&&t.h<1)add({x,y:t.h-2,z,kind:'iron'});
+        else if(mineral>.956&&t.h<1)add({x,y:t.h-2,z,kind:'copper'});
+        else if(mineral>.935&&t.h<1)add({x,y:t.h-2,z,kind:'coal'});
       }
-      if(t.biome==='desert'&&hash(x+42,z+12)>.94){for(let y=1;y<=2;y++)add({x,y:t.h+y,z,kind:'cactus'});}
-      if(hash(x+5,z+worldSeed)>.992&&t.h<2)add({x,y:t.h+1,z,kind:'ore'});
-      const mineral=hash(x+worldSeed*2,z-77);
-      if(mineral>.997&&t.h<1)add({x,y:t.h-2,z,kind:'gold'});
-      else if(mineral>.989&&t.h<1)add({x,y:t.h-2,z,kind:'crystal'});
-      else if(mineral>.974&&t.h<1)add({x,y:t.h-2,z,kind:'iron'});
-      else if(mineral>.956&&t.h<1)add({x,y:t.h-2,z,kind:'copper'});
-      else if(mineral>.935&&t.h<1)add({x,y:t.h-2,z,kind:'coal'});
-    }
+      loadedChunksRef.current=Array.from(loadedChunks);
+      worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);
+    };
+    const loadChunksAround=(cx:number,cz:number)=>{for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)generateChunk(cx+dx,cz+dz);};
+    if(savedBlocksRef.current){savedBlocksRef.current.forEach(add);savedBlocksRef.current=null;}
+    loadChunksAround(Math.floor(playerPositionRef.current.x/CHUNK_SIZE),Math.floor(playerPositionRef.current.z/CHUNK_SIZE));
+    savedChunksRef.current=null;
     // A rocky cave mouth and a small starting camp.
     for(let x=-2;x<=2;x++)for(let z=-2;z<=2;z++){const p=terrain(x+15,z-13);if(x===-2||x===2||z===-2||z===2)add({x:x+15,y:p.h+1,z:z-13,kind:'stone'});}
     const camp=new THREE.Group();const tentMat=new THREE.MeshStandardMaterial({color:0xb98a54});const tent=new THREE.Mesh(new THREE.ConeGeometry(2,2.6,4),tentMat);tent.position.set(2,1.2,2);camp.add(tent);camp.position.set(0,0,0);scene.add(camp);
-    if(savedBlocksRef.current){blocks.forEach(v=>scene.remove(v.mesh));blocks.clear();savedBlocksRef.current.forEach(add);savedBlocksRef.current=null;}
     worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);
     const portalBase=terrain(0,-12).h+1;
     const portal=new THREE.Group();portal.position.set(0,portalBase,-12);scene.add(portal);
@@ -456,7 +469,7 @@ function App(){
       const maxHp=i===6?240:[50,45,40,70,55,60][i];
       mobActors.push({mesh,name:mobNames[i],hp:maxHp,maxHp,hostile:i>=3,boss:i===6,cooldown:0,respawnAt:0,phase:i*1.7});
     }
-    let yaw=0,pitch=0,frame=0,elapsed=0,last=performance.now(),portalNearbyLocal=false,respawning=false;let verticalVelocity=0,grounded=false;
+    let yaw=0,pitch=0,frame=0,elapsed=0,last=performance.now(),portalNearbyLocal=false,respawning=false;let verticalVelocity=0,grounded=false;let activeChunkX=Math.floor(camera.position.x/16),activeChunkZ=Math.floor(camera.position.z/16);
     const padActionHeld={jump:false,break:false,place:false};
     const onKey=(e:KeyboardEvent,down:boolean)=>{if(down&&e.repeat)return;const v=down?1:0;if(e.code==='KeyW'||e.code==='ArrowUp')controls.current.forward=v;if(e.code==='KeyS'||e.code==='ArrowDown')controls.current.forward=-v;if(e.code==='KeyA'||e.code==='ArrowLeft')controls.current.side=-v;if(e.code==='KeyD'||e.code==='ArrowRight')controls.current.side=v;if(down&&e.code==='Space'){jump();e.preventDefault();}if(down&&e.code==='KeyE'&&!openChest())setPanel(p=>p==='bag'?'none':'bag');if(down&&e.code==='KeyF')attack();if(down&&e.code==='KeyG')usePortal();if(down&&e.code.startsWith('Digit')){const n=Number(e.code.slice(5))-1;if(hotbarItems[n]){selectedRef.current=hotbarItems[n];setSelected(hotbarItems[n]);}}};
     const kd=(e:KeyboardEvent)=>onKey(e,true),ku=(e:KeyboardEvent)=>onKey(e,false);window.addEventListener('keydown',kd);window.addEventListener('keyup',ku);
@@ -469,7 +482,7 @@ function App(){
     const animate=()=>{frame=requestAnimationFrame(animate);const now=performance.now();const dt=Math.min(.05,(now-last)/1000);last=now;elapsed+=dt;
       yaw-=controls.current.lookX*.035;pitch-=controls.current.lookY*.035;controls.current.lookX=0;controls.current.lookY=0;
       const pads=navigator.getGamepads?.()||[];const pad=pads[0];if(pad){const dz=.16;const px=Math.abs(pad.axes[0]||0)>dz?pad.axes[0]:0;const py=Math.abs(pad.axes[1]||0)>dz?pad.axes[1]:0;controls.current.side=px;controls.current.forward=-py;yaw-=(pad.axes[2]||0)*dt*2.4;pitch+=(pad.axes[3]||0)*dt*2.1;const jumpHeld=!!pad.buttons[0]?.pressed;const breakHeld=!!pad.buttons[2]?.pressed;const placeHeld=!!pad.buttons[1]?.pressed;if(jumpHeld&&!padActionHeld.jump)worldRef.current?.jump();if(breakHeld&&!padActionHeld.break)worldRef.current?.breakBlock();if(placeHeld&&!padActionHeld.place)worldRef.current?.placeBlock();padActionHeld.jump=jumpHeld;padActionHeld.break=breakHeld;padActionHeld.place=placeHeld;}else{padActionHeld.jump=false;padActionHeld.break=false;padActionHeld.place=false;}pitch=Math.max(-1.2,Math.min(1.2,pitch));camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;
-      const f=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),r=new THREE.Vector3(f.z,0,-f.x);const moveX=(-f.x*controls.current.forward+r.x*controls.current.side)*dt*5,moveZ=(-f.z*controls.current.forward+r.z*controls.current.side)*dt*5;const feetY=camera.position.y-1.72,headY=camera.position.y+.12;const hasBlock=(x:number,y:number,z:number)=>blocks.has(key(x,y,z));if(!collidesWithBlocks(camera.position.x+moveX,camera.position.z,feetY,headY,hasBlock))camera.position.x+=moveX;if(!collidesWithBlocks(camera.position.x,camera.position.z+moveZ,feetY,headY,hasBlock))camera.position.z+=moveZ;const groundY=terrain(Math.round(camera.position.x),Math.round(camera.position.z)).h+2.22;const vertical=stepVerticalMotion(camera.position.y,verticalVelocity,groundY,dt);camera.position.y=vertical.y;verticalVelocity=vertical.velocity;grounded=vertical.grounded;playerPositionRef.current={x:camera.position.x,y:camera.position.y,z:camera.position.z};
+      const f=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),r=new THREE.Vector3(f.z,0,-f.x);const moveX=(-f.x*controls.current.forward+r.x*controls.current.side)*dt*5,moveZ=(-f.z*controls.current.forward+r.z*controls.current.side)*dt*5;const feetY=camera.position.y-1.72,headY=camera.position.y+.12;const hasBlock=(x:number,y:number,z:number)=>blocks.has(key(x,y,z));if(!collidesWithBlocks(camera.position.x+moveX,camera.position.z,feetY,headY,hasBlock))camera.position.x+=moveX;if(!collidesWithBlocks(camera.position.x,camera.position.z+moveZ,feetY,headY,hasBlock))camera.position.z+=moveZ;const groundY=terrain(Math.round(camera.position.x),Math.round(camera.position.z)).h+2.22;const vertical=stepVerticalMotion(camera.position.y,verticalVelocity,groundY,dt);camera.position.y=vertical.y;verticalVelocity=vertical.velocity;grounded=vertical.grounded;playerPositionRef.current={x:camera.position.x,y:camera.position.y,z:camera.position.z};const nextChunkX=Math.floor(camera.position.x/16),nextChunkZ=Math.floor(camera.position.z/16);if(nextChunkX!==activeChunkX||nextChunkZ!==activeChunkZ){activeChunkX=nextChunkX;activeChunkZ=nextChunkZ;loadChunksAround(activeChunkX,activeChunkZ);}
       if(mode==='survival'&&statsRef.current.health<=0&&!respawning){respawning=true;camera.position.set(0,terrain(0,8).h+2.22,8);verticalVelocity=0;grounded=true;playerPositionRef.current={x:0,y:camera.position.y,z:8};setStats(s=>({...s,health:100,hunger:Math.max(30,s.hunger),thirst:Math.max(30,s.thirst),stamina:100}));setNotice('Ти відродився на точці появи. Інвентар збережено');}
       else if(statsRef.current.health>0)respawning=false;
       const nearPortal=camera.position.distanceTo(portal.position)<2.8;if(nearPortal!==portalNearbyLocal){portalNearbyLocal=nearPortal;setPortalNearby(nearPortal);setNotice(nearPortal?'Портал поруч — натисни кнопку порталу або G':'Досліджуй світ та шукай портал');}portalSurface.rotation.y=Math.sin(elapsed*1.8)*.08;portalSurface.material.opacity=.58+Math.sin(elapsed*2.5)*.14;

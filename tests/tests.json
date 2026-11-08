@@ -494,5 +494,23 @@
       "Walk across open ground"
     ],
     "expected": "Solid blocks stop the player's horizontal movement; ground blocks do not trap the player."
+  },
+  {
+    "name": "Progressive world chunk loading",
+    "viewport": "desktop and mobile",
+    "covers": [
+      "initial nearby chunk ring",
+      "new chunks load while exploring",
+      "chunk generation is not duplicated",
+      "generated chunks persist across saves and reloads"
+    ],
+    "description": "Checks that the world grows as the player crosses chunk boundaries and that generated terrain survives save/load.",
+    "steps": [
+      "Start a new world and explore toward a chunk boundary",
+      "Continue walking into a new area",
+      "Save, reload the world, and return to the explored area",
+      "Explore beyond the previously generated area"
+    ],
+    "expected": "New terrain appears around the player as they explore; revisiting saved areas retains player edits and newly generated chunks."
   }
 ]
