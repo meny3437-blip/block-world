@@ -37,3 +37,23 @@ test('chunk neighborhood supports bounded radii and rejects invalid input', () =
   assert.throws(() => chunkNeighborhood(0, 0, 9), RangeError);
   assert.throws(() => chunkNeighborhood(0.5, 0), RangeError);
 });
+
+import { chunkColumnRange } from '../src/chunks.js';
+
+test('chunk columns are generated in bounded slices without gaps or overlaps', () => {
+  const first = chunkColumnRange(-2, 0, 4);
+  assert.deepEqual(first, { start: -32, end: -28, nextColumn: 4, complete: false });
+  const second = chunkColumnRange(-2, first.nextColumn, 4);
+  const third = chunkColumnRange(-2, second.nextColumn, 4);
+  const fourth = chunkColumnRange(-2, third.nextColumn, 4);
+  assert.deepEqual([first.start, second.start, third.start, fourth.start], [-32, -28, -24, -20]);
+  assert.equal(fourth.end, -16);
+  assert.equal(fourth.complete, true);
+});
+
+test('chunk column ranges reject invalid progress and budgets', () => {
+  assert.throws(() => chunkColumnRange(0, -1, 4), RangeError);
+  assert.throws(() => chunkColumnRange(0, 16, 4), RangeError);
+  assert.throws(() => chunkColumnRange(0, 0, 0), RangeError);
+  assert.throws(() => chunkColumnRange(0, 0, 17), RangeError);
+});

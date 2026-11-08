@@ -25,3 +25,18 @@ export function chunkNeighborhood(chunkX, chunkZ, radius = 1) {
   }
   return chunks;
 }
+
+export function chunkColumnRange(chunkX, nextColumn = 0, columnBudget = 4) {
+  if (!Number.isSafeInteger(chunkX)
+    || !Number.isSafeInteger(nextColumn) || nextColumn < 0 || nextColumn >= CHUNK_SIZE
+    || !Number.isSafeInteger(columnBudget) || columnBudget < 1 || columnBudget > CHUNK_SIZE) {
+    throw new RangeError('Invalid chunk column range input');
+  }
+  const endColumn = Math.min(CHUNK_SIZE, nextColumn + columnBudget);
+  return {
+    start: chunkX * CHUNK_SIZE + nextColumn,
+    end: chunkX * CHUNK_SIZE + endColumn,
+    nextColumn: endColumn,
+    complete: endColumn === CHUNK_SIZE
+  };
+}
