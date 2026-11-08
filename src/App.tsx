@@ -365,14 +365,14 @@ function App(){
     const waterChunks=new Set<string>();
     const chunkQueue:{x:number;z:number;nextColumn:number}[]=[];
     const queuedChunks=new Set<string>();
-    const addChunkWaterColumn=(cx:number,cz:number,x:number)=>{for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){if(terrain(x,z).h < -1){const w=new THREE.Mesh(waterGeometry,mats.water);w.position.set(x,-.42,z);scene.add(w);}}};
+    const addChunkWaterColumn=(cz:number,x:number)=>{for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){if(terrain(x,z).h < -1){const w=new THREE.Mesh(waterGeometry,mats.water);w.position.set(x,-.42,z);scene.add(w);}}};
     const generateChunk=(cx:number,cz:number,nextColumn=0)=>{
       const chunkId=chunkKey(cx,cz);
       const alreadyLoaded=loadedChunks.has(chunkId);
       if(alreadyLoaded&&waterChunks.has(chunkId))return true;
       const range=chunkColumnRange(cx,nextColumn,1);
       for(let x=range.start;x<range.end;x++){
-        addChunkWaterColumn(cx,cz,x);
+        addChunkWaterColumn(cz,x);
         if(alreadyLoaded)continue;
         for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){
         if(dimension==='sky'&&Math.sqrt(x*x+z*z)>5&&hash(x+worldSeed,z-worldSeed)<.28)continue;
