@@ -40,3 +40,7 @@ export function chunkColumnRange(chunkX, nextColumn = 0, columnBudget = 4) {
     complete: endColumn === CHUNK_SIZE
   };
 }
+
+export function visibleChunkKeys(chunkX, chunkZ, radius = 1) {
+  return new Set(chunkNeighborhood(chunkX, chunkZ, radius).map((chunk) => chunk.key));
+}

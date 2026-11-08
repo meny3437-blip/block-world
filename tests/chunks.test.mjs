@@ -57,3 +57,15 @@ test('chunk column ranges reject invalid progress and budgets', () => {
   assert.throws(() => chunkColumnRange(0, 0, 0), RangeError);
   assert.throws(() => chunkColumnRange(0, 0, 17), RangeError);
 });
+
+import { visibleChunkKeys } from '../src/chunks.js';
+
+test('visible chunk keys match the render neighborhood and shift without stale entries', () => {
+  const first = visibleChunkKeys(0, 0);
+  assert.equal(first.size, 9);
+  assert.equal(first.has('0,0'), true);
+  assert.equal(first.has('2,0'), false);
+  const shifted = visibleChunkKeys(1, 0);
+  assert.equal(shifted.has('2,0'), true);
+  assert.equal(shifted.has('-2,0'), false);
+});
