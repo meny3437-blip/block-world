@@ -358,7 +358,6 @@ function App(){
       return {h:dimension==='sky'?h+8:h,top:desert||beach?'sand':snowy?'snow':'grass',biome:dimension==='sky'?'sky':desert?'desert':snowy?'tundra':d>14?'highland':'forest'};
     };
     const loadedChunks=new Set<string>(savedChunksRef.current||[]);
-    const loadedChunks=new Set<string>(savedChunksRef.current||[]);
     loadedChunksRef.current=Array.from(loadedChunks);
     const waterChunks=new Set<string>();
     const chunkQueue:{x:number;z:number}[]=[];
