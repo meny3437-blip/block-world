@@ -478,5 +478,21 @@
       "Fall to zero health and verify respawn places the player above the ground"
     ],
     "expected": "Jumping applies upward velocity, gravity returns the player to the terrain surface, and respawn starts above ground."
+  },
+  {
+    "name": "Voxel player collision",
+    "viewport": "desktop and mobile",
+    "covers": [
+      "solid blocks stop horizontal movement",
+      "player can stand on terrain",
+      "empty spaces remain traversable"
+    ],
+    "description": "Verifies the player cannot walk through solid voxel blocks while still being able to move across the ground.",
+    "steps": [
+      "Walk toward a tree trunk or placed block",
+      "Move against the block from different sides",
+      "Walk across open ground"
+    ],
+    "expected": "Solid blocks stop the player's horizontal movement; ground blocks do not trap the player."
   }
 ]
