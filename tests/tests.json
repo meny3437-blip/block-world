@@ -218,5 +218,25 @@
       "Defeat a hostile monster and inspect its meat and bone drops"
     ],
     "expected": "Six visually distinct creature types are rendered; passive animals and hostile monsters have separate health values and drop tables, and all mob geometries and materials are disposed when the world scene is rebuilt."
+  },
+  {
+    "name": "Respawn safely after health reaches zero",
+    "viewport": "mobile",
+    "covers": [
+      "survival death detection",
+      "spawn point restoration",
+      "health restoration",
+      "stamina restoration",
+      "inventory retained on respawn",
+      "saved respawn position"
+    ],
+    "description": "Verifies the player can continue after defeat without getting trapped at zero health or losing the carried inventory.",
+    "steps": [
+      "Enter survival mode and allow hostile creatures or survival depletion to reduce health to zero",
+      "Observe the respawn message and player position",
+      "Open the inventory and inspect carried resources",
+      "Continue moving and interacting with the world"
+    ],
+    "expected": "The player returns to the Overworld spawn coordinates with full health and stamina, hunger and thirst are kept above zero, and the inventory is retained."
   }
 ]
