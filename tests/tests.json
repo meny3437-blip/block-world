@@ -305,5 +305,25 @@
       "Defeat it and inspect the inventory for dragon scales and crystals"
     ],
     "expected": "A 240-health Ender Dragon spawns only in the End, actively pursues and attacks the player, takes damage from melee weapons and arrows, drops meat, dragon scales and crystals when defeated, and respawns only after a long cooldown."
+  },
+  {
+    "name": "Craft dragon armor from Ender Dragon scales",
+    "viewport": "mobile",
+    "covers": [
+      "Ender Dragon exclusive scale drops",
+      "dragon armor recipe",
+      "automatic armor priority",
+      "boss damage mitigation",
+      "dragon armor inventory persistence"
+    ],
+    "description": "Verifies that the Ender Dragon encounter unlocks a powerful armor upgrade that reduces incoming damage.",
+    "steps": [
+      "Defeat the Ender Dragon and collect at least four dragon scales",
+      "Collect four metal ingots",
+      "Craft dragon armor in the workshop",
+      "Open the inventory and confirm dragon armor is equipped above leather armor",
+      "Take a hit from a hostile mob and then the Ender Dragon"
+    ],
+    "expected": "Dragon armor can be crafted from four dragon scales and four ingots, takes priority over leather armor, and reduces regular hostile damage to one point and boss damage to four points per hit."
   }
 ]
