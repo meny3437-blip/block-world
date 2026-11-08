@@ -358,13 +358,15 @@ function App(){
     };
     const CHUNK_SIZE=16;
     const loadedChunks=new Set<string>(savedChunksRef.current||[]);
+    loadedChunksRef.current=Array.from(loadedChunks);
+    const waterChunks=new Set<string>();
+    const addChunkWater=(cx:number,cz:number)=>{const id=`${cx},${cz}`;if(waterChunks.has(id))return;waterChunks.add(id);for(let x=cx*CHUNK_SIZE;x<(cx+1)*CHUNK_SIZE;x++)for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){if(terrain(x,z).h < -1){const w=new THREE.Mesh(new THREE.BoxGeometry(1,.18,1),mats.water);w.position.set(x,-.42,z);scene.add(w);}}};
     const generateChunk=(cx:number,cz:number)=>{
-      const chunkId=`${cx},${cz}`;if(loadedChunks.has(chunkId))return;
+      const chunkId=`${cx},${cz}`;addChunkWater(cx,cz);if(loadedChunks.has(chunkId))return;
       loadedChunks.add(chunkId);
       for(let x=cx*CHUNK_SIZE;x<(cx+1)*CHUNK_SIZE;x++)for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){
         if(dimension==='sky'&&Math.sqrt(x*x+z*z)>5&&hash(x+worldSeed,z-worldSeed)<.28)continue;
         const t=terrain(x,z);
-        if(t.h < -1){const w=new THREE.Mesh(new THREE.BoxGeometry(1,.18,1),mats.water);w.position.set(x,-.42,z);scene.add(w);}
         add({x,y:t.h,z,kind:t.top as Kind});
         if(t.h>=-1){add({x,y:t.h-1,z,kind:'dirt'});add({x,y:t.h-2,z,kind:'stone'});}
         if(hash(x+worldSeed,z+99)>.985&&Math.abs(x)+Math.abs(z)>5&&t.top==='grass'){
