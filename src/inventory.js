@@ -1,21 +1,45 @@
+function validateCounts(items) {
+  for (const count of Object.values(items)) {
+    if (!Number.isSafeInteger(count) || count < 0) {
+      throw new RangeError('item counts must be non-negative safe integers');
+    }
+  }
+}
+
+function addCount(target, item, amount) {
+  const total = (target[item] || 0) + amount;
+  if (!Number.isSafeInteger(total)) {
+    throw new RangeError('combined item count exceeds the safe integer range');
+  }
+  return total;
+}
+
 export function addItemToBag(bag, item, amount) {
   if (!Number.isSafeInteger(amount) || amount <= 0) throw new RangeError('amount must be a positive integer');
-  return { ...bag, [item]: (bag[item] || 0) + amount };
+  validateCounts(bag);
+  return { ...bag, [item]: addCount(bag, item, amount) };
 }
 
 export function consumeItemFromBag(bag, item, amount) {
   if (!Number.isSafeInteger(amount) || amount <= 0) throw new RangeError('amount must be a positive integer');
+  validateCounts(bag);
   if ((bag[item] || 0) < amount) return { bag, consumed: false };
   return { bag: { ...bag, [item]: bag[item] - amount }, consumed: true };
 }
 
 export function craftItemInBag(bag, cost, item, amount) {
   if (!Number.isSafeInteger(amount) || amount <= 0) throw new RangeError('amount must be a positive integer');
-  if (Object.entries(cost).some(([key, count]) => !Number.isSafeInteger(count) || count <= 0 || (bag[key] || 0) < count)) {
+  validateCounts(bag);
+  for (const count of Object.values(cost)) {
+    if (!Number.isSafeInteger(count) || count <= 0) {
+      throw new RangeError('crafting costs must be positive safe integers');
+    }
+  }
+  if (Object.entries(cost).some(([key, count]) => (bag[key] || 0) < count)) {
     return { bag, crafted: false };
   }
   const next = { ...bag };
   for (const [key, count] of Object.entries(cost)) next[key] = (next[key] || 0) - count;
-  next[item] = (next[item] || 0) + amount;
+  next[item] = addCount(next, item, amount);
   return { bag: next, crafted: true };
 }

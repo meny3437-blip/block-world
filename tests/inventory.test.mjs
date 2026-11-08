@@ -44,3 +44,20 @@ test('inventory helpers reject invalid amounts', () => {
   assert.throws(() => consumeItemFromBag({}, 'wood', -1), RangeError);
   assert.throws(() => craftItemInBag({}, {}, 'torch', 1.5), RangeError);
 });
+
+test('inventory rejects invalid existing counts before changing state', () => {
+  assert.throws(() => addItemToBag({ wood: -1 }, 'wood', 1), RangeError);
+  assert.throws(() => consumeItemFromBag({ stone: 1.5 }, 'stone', 1), RangeError);
+  assert.throws(() => craftItemInBag({ wood: Number.NaN }, { wood: 1 }, 'plank', 1), RangeError);
+});
+
+test('adding or crafting cannot overflow a safe item count', () => {
+  assert.throws(() => addItemToBag({ wood: Number.MAX_SAFE_INTEGER }, 'wood', 1), RangeError);
+  assert.throws(() => craftItemInBag({ plank: Number.MAX_SAFE_INTEGER }, { wood: 1 }, 'plank', 1), RangeError);
+});
+
+test('crafting rejects malformed costs before consuming ingredients', () => {
+  const bag = { wood: 4 };
+  assert.throws(() => craftItemInBag(bag, { wood: -1 }, 'plank', 1), RangeError);
+  assert.deepEqual(bag, { wood: 4 });
+});
