@@ -275,6 +275,7 @@ function App(){
   const [stats,setStats]=useState<Stats>({health:100,hunger:86,thirst:90,stamina:100,day:1,hour:8,weather:'Ясно'});
   const [notice,setNotice]=useState('Збери ресурси та побудуй укриття до ночі');
   const [portalNearby,setPortalNearby]=useState(false);
+  const [bossHealth,setBossHealth]=useState<number|null>(null);
   const [panel,setPanel]=useState<'none'|'bag'|'craft'|'map'|'chest'>('none');
   const [chestStorage,setChestStorage]=useState<Record<string,Bag>>({});
   const chestRef=useRef(chestStorage);chestRef.current=chestStorage;
@@ -322,6 +323,7 @@ function App(){
 
   useEffect(()=>{
     const host=mount.current;if(!host)return;
+    setBossHealth(dimension==='end'?240:null);
     const scene=new THREE.Scene();const skyColor=dimension==='nether'?0x542522:dimension==='end'?0x171323:dimension==='sky'?0x9bd8f2:dimension==='ocean'?0x367fa8:0x8cc9f1;scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,25,76);
     const camera=new THREE.PerspectiveCamera(72,host.clientWidth/host.clientHeight,.1,150);camera.position.set(playerPositionRef.current.x,playerPositionRef.current.y,playerPositionRef.current.z);
     const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.4));renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);
@@ -379,7 +381,7 @@ function App(){
     const portalLight=new THREE.PointLight(dimension==='overworld'?0x9d58ff:0x5b8cff,1.5,7);portalLight.position.set(0,1.5,1);portal.add(portalLight);
     const ray=new THREE.Raycaster();const center=new THREE.Vector2(0,0);
     const target=()=>{ray.setFromCamera(center,camera);const hit=ray.intersectObjects([...blocks.values()].map(v=>v.mesh));return hit.find(h=>h.distance<7);};
-    const breakBlock=()=>{const h=target();if(!h){setNotice('Підійди ближче до ресурсу');return;}const m=h.object as THREE.Mesh;const p=m.position;const k=key(Math.round(p.x),Math.round(p.y),Math.round(p.z));const b=blocks.get(k)?.block;if(!b)return;if(mode==='survival'&&(b.kind==='wood'||b.kind.endsWith('_log'))&&!bagRef.current.axe){setNotice('Для швидкого добування колод потрібна сокира');return;}if(mode==='survival'&&['ore','copper','iron','gold','crystal','coal'].includes(b.kind)&&!bagRef.current.pickaxe){setNotice('Для добування руди потрібна кирка');return;}scene.remove(m);blocks.delete(k);const loot=b.kind==='leaf'||b.kind.endsWith('_leaves')?(Math.random()>.55?'berry':'wood'):b.kind==='grass'?'dirt':b.kind==='ore'?'ore':b.kind==='cactus'?'wood':b.kind.endsWith('_log')?'wood':b.kind;addItem(loot,1);worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);setBroken(v=>v+1);setNotice('Здобуто: '+(names[loot]||loot));};
+    const breakBlock=()=>{const h=target();if(!h){setNotice('Підійди ближче до ресурсу');return;}const m=h.object as THREE.Mesh;const p=m.position;const k=key(Math.round(p.x),Math.round(p.y),Math.round(p.z));const b=blocks.get(k)?.block;if(!b)return;scene.remove(m);blocks.delete(k);const loot=b.kind==='leaf'||b.kind.endsWith('_leaves')?(Math.random()>.55?'berry':'wood'):b.kind==='grass'?'dirt':b.kind==='ore'?'ore':b.kind==='cactus'?'wood':b.kind.endsWith('_log')?'wood':b.kind;addItem(loot,1);worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);setBroken(v=>v+1);setNotice('Здобуто: '+(names[loot]||loot));};
     const placeBlock=()=>{const h=target();if(!h){setNotice('Наведи приціл на блок');return;}const m=h.object as THREE.Mesh;const n=h.face?.normal.clone().transformDirection(m.matrixWorld)||new THREE.Vector3(0,1,0);const p=m.position.clone().add(n).round();if(blocks.has(key(p.x,p.y,p.z)))return;const kind=selectedRef.current;if(mode==='survival'&&!consume(kind,1)){setNotice('Немає цього блока в рюкзаку');return;}add({x:p.x,y:p.y,z:p.z,kind});worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);setNotice('Блок встановлено');};
     const openChest=()=>{const h=target();if(!h){setNotice('Наведи приціл на скриню та натисни E');return false;}const m=h.object as THREE.Mesh;const p=m.position;const k=key(Math.round(p.x),Math.round(p.y),Math.round(p.z));const block=blocks.get(k)?.block;if(block?.kind!=='chest'){setNotice('Дивись прямо на встановлену скриню');return false;}setActiveChest(k);setPanel('chest');setNotice('Скриню відкрито');return true;};
     const attack=()=>{
@@ -400,6 +402,7 @@ function App(){
       const weapon=ranged?'bow':bagRef.current.iron_sword?'iron_sword':bagRef.current.stone_sword?'stone_sword':bagRef.current.wood_sword?'wood_sword':'hand';
       const damage=ranged?36:weapon==='iron_sword'?60:weapon==='stone_sword'?42:weapon==='wood_sword'?28:18;
       target.hp-=damage;
+      if(target.boss)setBossHealth(Math.max(0,target.hp));
       if(!ranged){target.mesh.position.x+=forward.x*.28;target.mesh.position.z+=forward.z*.28;}
       if(target.hp<=0){
         target.mesh.visible=false;target.respawnAt=elapsed+(target.boss?90:18);
@@ -467,7 +470,7 @@ function App(){
       const hour=statsRef.current.hour;const night=hour<6||hour>19;const light=night?.28:Math.max(.55,Math.sin((hour-6)/13*Math.PI)*1.4);sun.intensity=light;hemi.intensity=night?.48:1.7;const daySky=dimension==='nether'?0x542522:dimension==='end'?0x171323:dimension==='sky'?0x9bd8f2:dimension==='ocean'?0x367fa8:0x8cc9f1;scene.background!.set(night&&dimension==='overworld'?0x172743:daySky);scene.fog!.color.set(night&&dimension==='overworld'?0x172743:daySky);
       mobActors.forEach((actor)=>{
         const m=actor.mesh;actor.cooldown=Math.max(0,actor.cooldown-dt);
-        if(!m.visible){if(elapsed>=actor.respawnAt){m.visible=true;actor.hp=actor.maxHp;m.position.set(actor.boss?0:(Math.random()-.5)*18,actor.boss?1.2:.05,actor.boss?-20:-10-Math.random()*12);}return;}
+        if(!m.visible){if(elapsed>=actor.respawnAt){m.visible=true;actor.hp=actor.maxHp;if(actor.boss)setBossHealth(actor.maxHp);m.position.set(actor.boss?0:(Math.random()-.5)*18,actor.boss?1.2:.05,actor.boss?-20:-10-Math.random()*12);}return;}
         const dx=camera.position.x-m.position.x,dz=camera.position.z-m.position.z;
         const distance=Math.hypot(dx,dz);
         if(actor.hostile&&(actor.boss||night)&&mode!=='creative'&&distance<(actor.boss?30:15)&&distance>.001){
@@ -496,6 +499,7 @@ function App(){
     <section className="world" ref={mount}>
       <div className="crosshair">+</div><div className="world-tip">{notice}</div><div className="look-zone" onPointerDown={dragStart} onPointerMove={dragMove} onPointerUp={e=>e.currentTarget.releasePointerCapture(e.pointerId)} onPointerCancel={e=>e.currentTarget.releasePointerCapture(e.pointerId)} aria-label="Огляд світу: проведи пальцем" />
       <div className="status-panel"><div>❤ <span>{Math.round(stats.health)}</span><i><em style={{width:stats.health+'%'}}/></i></div><div>🍖 <span>{Math.round(stats.hunger)}</span><i><em style={{width:stats.hunger+'%'}}/></i></div><div>💧 <span>{Math.round(stats.thirst)}</span><i><em style={{width:stats.thirst+'%'}}/></i></div><div>⚡ <span>{Math.round(stats.stamina)}</span><i><em style={{width:stats.stamina+'%'}}/></i></div></div>
+      {dimension==='end'&&bossHealth!==null&&<div className="boss-health"><strong>🐉 Дракон Краю</strong><i><em style={{width:Math.max(0,bossHealth/240*100)+'%'}}/></i><small>{bossHealth>0?bossHealth+'/240':'Переможений'}</small></div>}
       {portalNearby&&<button className="portal-touch" aria-label="Перейти через портал" onClick={()=>worldRef.current?.usePortal()}>🌀 Перейти через портал</button>}<div className="mobile-controls"><div className="joystick" onPointerDown={joystickStart} onPointerMove={joystickMove} onPointerUp={joystickEnd} onPointerCancel={joystickEnd}><span className="joystick-knob">●</span></div><div className="action-pad"><button aria-label="Стрибок" onClick={()=>worldRef.current?.jump()}>⬆</button><button aria-label="Зламати блок" onClick={()=>worldRef.current?.breakBlock()}>⛏</button><button aria-label="Поставити блок" onClick={()=>worldRef.current?.placeBlock()}>▣</button><button aria-label="Атака" onClick={()=>worldRef.current?.attack()}>⚔</button><button aria-label="Інвентар" onClick={()=>setPanel(p=>p==='bag'?'none':'bag')}>🎒</button><button aria-label="Відкрити скриню" onClick={()=>worldRef.current?.openChest()}>📦</button></div></div>
     </section>
     <div className="survival-dock"><div className="dock-actions"><button onClick={()=>setPanel(panel==='bag'?'none':'bag')}>🎒 Рюкзак</button><button onClick={()=>setPanel(panel==='craft'?'none':'craft')}>🛠 Крафт</button><button onClick={()=>setPanel(panel==='map'?'none':'map')}>🧭 Світ</button><button onClick={()=>setMode(m=>m==='survival'?'creative':'survival')}>{mode==='survival'?'Режим: виживання':'Режим: творчий'}</button></div>

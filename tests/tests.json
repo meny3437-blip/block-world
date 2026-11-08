@@ -349,22 +349,22 @@
     "expected": "A chest can be crafted from eight planks or selected in Creative mode; only a targeted chest opens, deposit and withdraw transfer item counts without loss, and contents persist independently for each chest and dimension."
   },
   {
-    "name": "Require the correct tools for logs and mineral ores",
+    "name": "Track Ender Dragon health during the boss fight",
     "viewport": "mobile",
     "covers": [
-      "axe requirement for wood logs",
-      "pickaxe requirement for mineral ores",
-      "tool crafting progression",
-      "creative mode bypasses tool requirements"
+      "End dimension boss health display",
+      "health bar damage updates",
+      "boss defeated state",
+      "boss health restoration after respawn"
     ],
-    "description": "Checks that survival mining uses the correct tool class while Creative mode remains unrestricted.",
+    "description": "Verifies the Ender Dragon health bar reflects combat damage and its defeated and respawn states.",
     "steps": [
-      "In Survival, aim at a tree log without an axe and try to break it",
-      "Craft an axe and break the log",
-      "Aim at a mineral ore without a pickaxe and try to break it",
-      "Craft a pickaxe and mine the ore",
-      "Switch to Creative mode and verify blocks can be mined without tools"
+      "Enter the End dimension and confirm the dragon health bar shows 240/240",
+      "Attack the dragon with a sword or bow",
+      "Confirm the health bar shrinks with each successful hit",
+      "Defeat the dragon and confirm the defeated state is shown",
+      "Wait for the boss respawn and confirm the bar resets"
     ],
-    "expected": "Survival mode blocks log harvesting without an axe and ore harvesting without a pickaxe; after crafting the required tool the block can be collected, while Creative mode bypasses both checks."
+    "expected": "The End-only boss health bar starts at 240/240, updates after every successful hit, shows a defeated state at zero and returns to full health when the boss respawns."
   }
 ]
