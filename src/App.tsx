@@ -5,6 +5,7 @@ import { breakChestContents, depositBagIntoChest, withdrawChestToBag } from './c
 import { getAttackDamage, getIncomingDamage, selectWeapon } from './combat.js';
 import { terrainWave } from './terrain.js';
 import { collidesWithBlocks, stepVerticalMotion } from './physics.js';
+import { chunkKey, chunkCoordinate, CHUNK_SIZE } from './chunks.js';
 
 type Kind = string;
 type BlockInfo = [id:string, label:string, color:number];
@@ -356,15 +357,15 @@ function App(){
       if(dimension==='ocean')return {h:Math.min(-2,h-3),top:'sand',biome:'ocean'};
       return {h:dimension==='sky'?h+8:h,top:desert||beach?'sand':snowy?'snow':'grass',biome:dimension==='sky'?'sky':desert?'desert':snowy?'tundra':d>14?'highland':'forest'};
     };
-    const CHUNK_SIZE=16;
+    const loadedChunks=new Set<string>(savedChunksRef.current||[]);
     const loadedChunks=new Set<string>(savedChunksRef.current||[]);
     loadedChunksRef.current=Array.from(loadedChunks);
     const waterChunks=new Set<string>();
     const chunkQueue:{x:number;z:number}[]=[];
     const queuedChunks=new Set<string>();
-    const addChunkWater=(cx:number,cz:number)=>{const id=`${cx},${cz}`;if(waterChunks.has(id))return;waterChunks.add(id);for(let x=cx*CHUNK_SIZE;x<(cx+1)*CHUNK_SIZE;x++)for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){if(terrain(x,z).h < -1){const w=new THREE.Mesh(new THREE.BoxGeometry(1,.18,1),mats.water);w.position.set(x,-.42,z);scene.add(w);}}};
+    const addChunkWater=(cx:number,cz:number)=>{const id=chunkKey(cx,cz);if(waterChunks.has(id))return;waterChunks.add(id);for(let x=cx*CHUNK_SIZE;x<(cx+1)*CHUNK_SIZE;x++)for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){if(terrain(x,z).h < -1){const w=new THREE.Mesh(new THREE.BoxGeometry(1,.18,1),mats.water);w.position.set(x,-.42,z);scene.add(w);}}};
     const generateChunk=(cx:number,cz:number)=>{
-      const chunkId=`${cx},${cz}`;addChunkWater(cx,cz);if(loadedChunks.has(chunkId))return;
+      const chunkId=chunkKey(cx,cz);addChunkWater(cx,cz);if(loadedChunks.has(chunkId))return;
       loadedChunks.add(chunkId);
       for(let x=cx*CHUNK_SIZE;x<(cx+1)*CHUNK_SIZE;x++)for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){
         if(dimension==='sky'&&Math.sqrt(x*x+z*z)>5&&hash(x+worldSeed,z-worldSeed)<.28)continue;
@@ -389,7 +390,7 @@ function App(){
     };
     const loadChunksAround=(cx:number,cz:number)=>{for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){const x=cx+dx,z=cz+dz,id=`${x},${z}`;if(!queuedChunks.has(id)){queuedChunks.add(id);chunkQueue.push({x,z});}}};
     if(savedBlocksRef.current){savedBlocksRef.current.forEach(add);savedBlocksRef.current=null;}
-    loadChunksAround(Math.floor(playerPositionRef.current.x/CHUNK_SIZE),Math.floor(playerPositionRef.current.z/CHUNK_SIZE));
+    loadChunksAround(chunkCoordinate(playerPositionRef.current.x),chunkCoordinate(playerPositionRef.current.z));
     savedChunksRef.current=null;
     // A rocky cave mouth and a small starting camp.
     for(let x=-2;x<=2;x++)for(let z=-2;z<=2;z++){const p=terrain(x+15,z-13);if(x===-2||x===2||z===-2||z===2)add({x:x+15,y:p.h+1,z:z-13,kind:'stone'});}
@@ -473,7 +474,7 @@ function App(){
       const maxHp=i===6?240:[50,45,40,70,55,60][i];
       mobActors.push({mesh,name:mobNames[i],hp:maxHp,maxHp,hostile:i>=3,boss:i===6,cooldown:0,respawnAt:0,phase:i*1.7});
     }
-    let yaw=0,pitch=0,frame=0,elapsed=0,last=performance.now(),portalNearbyLocal=false,respawning=false;let verticalVelocity=0,grounded=false;let activeChunkX=Math.floor(camera.position.x/16),activeChunkZ=Math.floor(camera.position.z/16);
+    let yaw=0,pitch=0,frame=0,elapsed=0,last=performance.now(),portalNearbyLocal=false,respawning=false;let verticalVelocity=0,grounded=false;let activeChunkX=chunkCoordinate(camera.position.x),activeChunkZ=chunkCoordinate(camera.position.z);
     const padActionHeld={jump:false,break:false,place:false};
     const onKey=(e:KeyboardEvent,down:boolean)=>{if(down&&e.repeat)return;const v=down?1:0;if(e.code==='KeyW'||e.code==='ArrowUp')controls.current.forward=v;if(e.code==='KeyS'||e.code==='ArrowDown')controls.current.forward=-v;if(e.code==='KeyA'||e.code==='ArrowLeft')controls.current.side=-v;if(e.code==='KeyD'||e.code==='ArrowRight')controls.current.side=v;if(down&&e.code==='Space'){jump();e.preventDefault();}if(down&&e.code==='KeyE'&&!openChest())setPanel(p=>p==='bag'?'none':'bag');if(down&&e.code==='KeyF')attack();if(down&&e.code==='KeyG')usePortal();if(down&&e.code.startsWith('Digit')){const n=Number(e.code.slice(5))-1;if(hotbarItems[n]){selectedRef.current=hotbarItems[n];setSelected(hotbarItems[n]);}}};
     const kd=(e:KeyboardEvent)=>onKey(e,true),ku=(e:KeyboardEvent)=>onKey(e,false);window.addEventListener('keydown',kd);window.addEventListener('keyup',ku);
@@ -486,7 +487,7 @@ function App(){
     const animate=()=>{frame=requestAnimationFrame(animate);const now=performance.now();const dt=Math.min(.05,(now-last)/1000);last=now;elapsed+=dt;if(chunkQueue.length){const next=chunkQueue.shift()!;queuedChunks.delete(`${next.x},${next.z}`);generateChunk(next.x,next.z);}
       yaw-=controls.current.lookX*.035;pitch-=controls.current.lookY*.035;controls.current.lookX=0;controls.current.lookY=0;
       const pads=navigator.getGamepads?.()||[];const pad=pads[0];if(pad){const dz=.16;const px=Math.abs(pad.axes[0]||0)>dz?pad.axes[0]:0;const py=Math.abs(pad.axes[1]||0)>dz?pad.axes[1]:0;controls.current.side=px;controls.current.forward=-py;yaw-=(pad.axes[2]||0)*dt*2.4;pitch+=(pad.axes[3]||0)*dt*2.1;const jumpHeld=!!pad.buttons[0]?.pressed;const breakHeld=!!pad.buttons[2]?.pressed;const placeHeld=!!pad.buttons[1]?.pressed;if(jumpHeld&&!padActionHeld.jump)worldRef.current?.jump();if(breakHeld&&!padActionHeld.break)worldRef.current?.breakBlock();if(placeHeld&&!padActionHeld.place)worldRef.current?.placeBlock();padActionHeld.jump=jumpHeld;padActionHeld.break=breakHeld;padActionHeld.place=placeHeld;}else{padActionHeld.jump=false;padActionHeld.break=false;padActionHeld.place=false;}pitch=Math.max(-1.2,Math.min(1.2,pitch));camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;
-      const f=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),r=new THREE.Vector3(f.z,0,-f.x);const moveX=(-f.x*controls.current.forward+r.x*controls.current.side)*dt*5,moveZ=(-f.z*controls.current.forward+r.z*controls.current.side)*dt*5;const feetY=camera.position.y-1.72,headY=camera.position.y+.12;const hasBlock=(x:number,y:number,z:number)=>blocks.has(key(x,y,z));if(!collidesWithBlocks(camera.position.x+moveX,camera.position.z,feetY,headY,hasBlock))camera.position.x+=moveX;if(!collidesWithBlocks(camera.position.x,camera.position.z+moveZ,feetY,headY,hasBlock))camera.position.z+=moveZ;const groundY=terrain(Math.round(camera.position.x),Math.round(camera.position.z)).h+2.22;const vertical=stepVerticalMotion(camera.position.y,verticalVelocity,groundY,dt);camera.position.y=vertical.y;verticalVelocity=vertical.velocity;grounded=vertical.grounded;playerPositionRef.current={x:camera.position.x,y:camera.position.y,z:camera.position.z};const nextChunkX=Math.floor(camera.position.x/16),nextChunkZ=Math.floor(camera.position.z/16);if(nextChunkX!==activeChunkX||nextChunkZ!==activeChunkZ){activeChunkX=nextChunkX;activeChunkZ=nextChunkZ;loadChunksAround(activeChunkX,activeChunkZ);}
+      const f=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),r=new THREE.Vector3(f.z,0,-f.x);const moveX=(-f.x*controls.current.forward+r.x*controls.current.side)*dt*5,moveZ=(-f.z*controls.current.forward+r.z*controls.current.side)*dt*5;const feetY=camera.position.y-1.72,headY=camera.position.y+.12;const hasBlock=(x:number,y:number,z:number)=>blocks.has(key(x,y,z));if(!collidesWithBlocks(camera.position.x+moveX,camera.position.z,feetY,headY,hasBlock))camera.position.x+=moveX;if(!collidesWithBlocks(camera.position.x,camera.position.z+moveZ,feetY,headY,hasBlock))camera.position.z+=moveZ;const groundY=terrain(Math.round(camera.position.x),Math.round(camera.position.z)).h+2.22;const vertical=stepVerticalMotion(camera.position.y,verticalVelocity,groundY,dt);camera.position.y=vertical.y;verticalVelocity=vertical.velocity;grounded=vertical.grounded;playerPositionRef.current={x:camera.position.x,y:camera.position.y,z:camera.position.z};const nextChunkX=chunkCoordinate(camera.position.x),nextChunkZ=chunkCoordinate(camera.position.z);if(nextChunkX!==activeChunkX||nextChunkZ!==activeChunkZ){activeChunkX=nextChunkX;activeChunkZ=nextChunkZ;loadChunksAround(activeChunkX,activeChunkZ);}
       if(mode==='survival'&&statsRef.current.health<=0&&!respawning){respawning=true;camera.position.set(0,terrain(0,8).h+2.22,8);verticalVelocity=0;grounded=true;playerPositionRef.current={x:0,y:camera.position.y,z:8};setStats(s=>({...s,health:100,hunger:Math.max(30,s.hunger),thirst:Math.max(30,s.thirst),stamina:100}));setNotice('Ти відродився на точці появи. Інвентар збережено');}
       else if(statsRef.current.health>0)respawning=false;
       const nearPortal=camera.position.distanceTo(portal.position)<2.8;if(nearPortal!==portalNearbyLocal){portalNearbyLocal=nearPortal;setPortalNearby(nearPortal);setNotice(nearPortal?'Портал поруч — натисни кнопку порталу або G':'Досліджуй світ та шукай портал');}portalSurface.rotation.y=Math.sin(elapsed*1.8)*.08;portalSurface.material.opacity=.58+Math.sin(elapsed*2.5)*.14;

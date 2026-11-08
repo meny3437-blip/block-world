@@ -60,7 +60,7 @@ npm test
 
 ## Quality checks
 
-GitHub Actions runs automated inventory, combat, chest-transfer, terrain-generation, player-physics and collision tests, validates the manual QA plan JSON, and builds the production bundle for pushes and pull requests to `main`.
+GitHub Actions runs automated inventory, combat, chest-transfer, terrain-generation, player-physics, voxel collision and chunk-coordinate tests, validates the manual QA plan JSON, and builds the production bundle for pushes and pull requests to `main`.
 
 `tests/*.test.mjs` contains executable Node.js tests for inventory collection, consumption and crafting, chest transfers, weapon selection, attack damage, armor mitigation, deterministic terrain generation, jump/gravity integration and voxel collision. `tests/tests.json` is the manual gameplay QA plan; those gameplay scenarios still require browser/device testing and are not represented as automated tests.
 

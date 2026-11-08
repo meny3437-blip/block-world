@@ -512,5 +512,19 @@
       "Explore beyond the previously generated area"
     ],
     "expected": "New terrain appears around the player as they explore; revisiting saved areas retains player edits and newly generated chunks."
+  },
+  {
+    "name": "Chunk coordinate boundaries",
+    "viewport": "automated",
+    "covers": [
+      "16-block chunk sizing",
+      "negative world coordinates",
+      "stable chunk keys"
+    ],
+    "description": "Verifies chunk indexing at positive and negative boundaries so exploration does not create gaps or duplicate chunks.",
+    "steps": [
+      "Run the chunk helper unit tests"
+    ],
+    "expected": "Positions on either side of zero and exact 16-block boundaries map to the correct chunk."
   }
 ]
