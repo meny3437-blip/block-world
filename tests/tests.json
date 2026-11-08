@@ -406,5 +406,23 @@
       "Verify leather and dragon armor damage reduction for regular mobs and the Ender Dragon"
     ],
     "expected": "All combat calculation tests pass: iron swords out-damage stone and wooden swords, bow damage is consistent, and dragon armor provides stronger protection than leather armor."
+  },
+  {
+    "name": "Switching dimensions closes the active chest panel",
+    "viewport": "desktop and mobile",
+    "covers": [
+      "close active chest on dimension change",
+      "load dimension-specific chest storage",
+      "preserve separate chest contents across dimensions"
+    ],
+    "description": "Checks that the chest interface never remains attached to a chest from the previous dimension.",
+    "steps": [
+      "Place a chest in the Overworld and deposit items",
+      "Open the chest, then travel to the Nether",
+      "Verify the chest panel closes and no Overworld chest is shown",
+      "Place a different chest in the Nether and deposit a different item",
+      "Return to the Overworld and verify the original chest contents remain unchanged"
+    ],
+    "expected": "The chest panel closes on dimension change and each dimension displays only its own independently saved chest contents."
   }
 ]
