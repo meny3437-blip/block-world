@@ -325,5 +325,27 @@
       "Take a hit from a hostile mob and then the Ender Dragon"
     ],
     "expected": "Dragon armor can be crafted from four dragon scales and four ingots, takes priority over leather armor, and reduces regular hostile damage to one point and boss damage to four points per hit."
+  },
+  {
+    "name": "Store and retrieve items in persistent chests",
+    "viewport": "mobile",
+    "covers": [
+      "chest block placement",
+      "aimed chest interaction with E",
+      "per-chest item storage",
+      "deposit all inventory items",
+      "withdraw all stored items",
+      "chest contents autosave",
+      "independent chest storage by dimension"
+    ],
+    "description": "Verifies that placed chests can be opened and that their contents survive reloads and dimension changes.",
+    "steps": [
+      "Enter Creative mode and select a chest block, then place it in the world",
+      "Aim at the chest and press E or the mobile chest button",
+      "Deposit all items and close the chest",
+      "Reload or switch dimensions and return to the chest",
+      "Open the same chest and withdraw the stored items"
+    ],
+    "expected": "Only a targeted chest opens; deposit and withdraw actions transfer all item counts without loss, and chest contents persist independently for each chest and dimension."
   }
 ]
