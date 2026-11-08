@@ -125,7 +125,7 @@ type Stats = { health:number; hunger:number; thirst:number; stamina:number; day:
 type Bag = Record<string,number>;
 const STORE = 'block-world-survival-v2';
 const PLAYER_STORE = `${STORE}:player`;
-const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'Сире м’ясо',cooked_meat:'Смажене м’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',bone:'Кістка',leather_armor:'Шкіряна броня',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
+const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'Сире м’ясо',cooked_meat:'Смажене м’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',bone:'Кістка',arrow:'Стріла',leather_armor:'Шкіряна броня',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
   oak_planks:'Дубові дошки',
   birch_planks:'Березові дошки',
   spruce_planks:'Ялинові дошки',
@@ -254,6 +254,7 @@ const recipes = [
   {id:'cooked_meat',label:'Смажене м’ясо',cost:{meat:1,coal:1},give:1},
   {id:'fishingrod',label:'Вудка',cost:{stick:3,plank:2},give:1},
   {id:'bow',label:'Лук',cost:{stick:3,plank:2},give:1},
+  {id:'arrow',label:'Стріли ×4',cost:{stick:1,bone:1},give:4},
   {id:'ingot',label:'Металевий злиток',cost:{copper:2,coal:1},give:1}
 ];
 const clamp=(n:number)=>Math.max(0,Math.min(100,n));
@@ -378,7 +379,8 @@ function App(){
     const attack=()=>{
       if(mode==='survival'&&statsRef.current.stamina<8){setNotice('Замало витривалості для атаки');return;}
       const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
-      let target:MobActor|undefined,best=3.25;
+      const ranged=!!bagRef.current.bow&&(bagRef.current.arrow||0)>0;
+      let target:MobActor|undefined,best=ranged?12:3.25;
       for(const actor of mobActors){
         if(!actor.mesh.visible)continue;
         const delta=actor.mesh.position.clone().sub(camera.position);delta.y=0;
@@ -387,11 +389,12 @@ function App(){
         target=actor;best=distance;
       }
       if(!target){setNotice('Поруч немає істоти — наведися на моба та атакуй');return;}
+      if(ranged&&!consume('arrow',1)){setNotice('Закінчилися стріли');return;}
       setStats(s=>({...s,stamina:clamp(s.stamina-8)}));
-      const weapon=bagRef.current.iron_sword?'iron_sword':bagRef.current.stone_sword?'stone_sword':bagRef.current.wood_sword?'wood_sword':'hand';
-      const damage=weapon==='iron_sword'?60:weapon==='stone_sword'?42:weapon==='wood_sword'?28:18;
+      const weapon=ranged?'bow':bagRef.current.iron_sword?'iron_sword':bagRef.current.stone_sword?'stone_sword':bagRef.current.wood_sword?'wood_sword':'hand';
+      const damage=ranged?36:weapon==='iron_sword'?60:weapon==='stone_sword'?42:weapon==='wood_sword'?28:18;
       target.hp-=damage;
-      target.mesh.position.x+=forward.x*.28;target.mesh.position.z+=forward.z*.28;
+      if(!ranged){target.mesh.position.x+=forward.x*.28;target.mesh.position.z+=forward.z*.28;}
       if(target.hp<=0){
         target.mesh.visible=false;target.respawnAt=elapsed+18;
         const food=target.hostile?1:2;

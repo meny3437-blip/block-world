@@ -260,5 +260,28 @@
       "Repeat with raw meat and berries to compare nutrition"
     ],
     "expected": "Cooked meat is crafted only when both ingredients are available and is consumed before raw meat or berries; cooked meat restores 48 hunger and 9 health, raw meat 30 hunger and 4 health, and berries 22 hunger and 2 health."
+  },
+  {
+    "name": "Use bow and craft arrows for ranged combat",
+    "viewport": "mobile",
+    "covers": [
+      "bow crafting",
+      "arrow crafting from stick and bone",
+      "arrow inventory count",
+      "12-unit ranged targeting",
+      "arrow consumption only on a hit",
+      "ranged weapon damage",
+      "melee fallback when arrows run out"
+    ],
+    "description": "Verifies the bow can hit creatures at range when arrows are available and that each successful shot consumes one arrow.",
+    "steps": [
+      "Collect sticks and bones from the world and hostile creatures",
+      "Craft a bow and a batch of arrows",
+      "Stand more than three units but within twelve units of a creature",
+      "Face the creature and use the attack control",
+      "Verify one arrow is consumed and damage is applied",
+      "Use all arrows and verify attacks return to melee range"
+    ],
+    "expected": "A crafted bow plus at least one arrow enables a 12-unit directional attack dealing 36 damage; each successful hit consumes exactly one arrow, while empty ammunition falls back to normal melee range."
   }
 ]
