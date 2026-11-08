@@ -27,5 +27,7 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Run inventory unit tests
+        run: npm test
       - name: Build production bundle
         run: npm run build

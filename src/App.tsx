@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { addItemToBag, consumeItemFromBag, craftItemInBag } from './inventory.js';
 
 type Kind = string;
 type BlockInfo = [id:string, label:string, color:number];
@@ -283,13 +284,12 @@ function App(){
   const playerPositionRef=useRef({x:0,y:2.1,z:8});
   const bagRef=useRef(bag); bagRef.current=bag;
   const statsRef=useRef(stats); statsRef.current=stats;
-  const addItem=useCallback((item:string,n:number)=>{const current=bagRef.current;const next={...current,[item]:(current[item]||0)+n};bagRef.current=next;setBag(next);},[]);
-  const consume=useCallback((item:string,n:number)=>{const current=bagRef.current;if((current[item]||0)<n)return false;const next={...current,[item]:current[item]-n};bagRef.current=next;setBag(next);return true;},[]);
+  const addItem=useCallback((item:string,n:number)=>{const next=addItemToBag(bagRef.current,item,n);bagRef.current=next;setBag(next);},[]);
+  const consume=useCallback((item:string,n:number)=>{const result=consumeItemFromBag(bagRef.current,item,n);if(!result.consumed)return false;bagRef.current=result.bag;setBag(result.bag);return true;},[]);
   const craft=useCallback((r:typeof recipes[number])=>{
-    const b=bagRef.current;
-    if(Object.entries(r.cost).some(([k,v])=>(b[k]||0)<v)){setNotice('Не вистачає матеріалів для крафту');return;}
-    const next={...b};Object.entries(r.cost).forEach(([k,v])=>next[k]=(next[k]||0)-v);next[r.id]=(next[r.id]||0)+r.give;bagRef.current=next;setBag(next);
-    setNotice('Створено: '+r.label);
+    const result=craftItemInBag(bagRef.current,r.cost,r.id,r.give);
+    if(!result.crafted){setNotice('Не вистачає матеріалів для крафту');return;}
+    bagRef.current=result.bag;setBag(result.bag);setNotice('Створено: '+r.label);
   },[]);
   const eat=useCallback(()=>{if(!consume('berry',1)&&!consume('meat',1)){setNotice('Немає їжі в рюкзаку');return;}setStats(s=>({...s,hunger:clamp(s.hunger+28),health:clamp(s.health+3)}));setNotice('Ти поїв. Голод зменшився');},[consume]);
   const drink=useCallback(()=>{setStats(s=>({...s,thirst:clamp(s.thirst+35)}));setNotice('Ти напився води');},[]);
