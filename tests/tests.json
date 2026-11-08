@@ -544,5 +544,25 @@
       "Compare ore locations at shallow and deep levels"
     ],
     "expected": "Caves are reproducible for a seed, contain solid stone walls, and expose coal, copper, iron, crystal and gold at varying depths."
+  },
+  {
+    "name": "Render only nearby chunks while retaining distant world edits",
+    "viewport": "desktop and mobile",
+    "covers": [
+      "3x3 visible chunk neighborhood",
+      "hide departed chunk groups",
+      "show newly entered chunk groups",
+      "raycast ignores hidden chunk meshes",
+      "world edits persist while chunks are hidden"
+    ],
+    "description": "Checks that chunk visibility follows the player and hidden distant blocks cannot intercept interactions.",
+    "steps": [
+      "Start a world and place a uniquely identifiable block near spawn",
+      "Travel across at least one 16-block chunk boundary",
+      "Confirm the old chunk is no longer rendered and the new neighborhood appears",
+      "Aim and break/place blocks in the new area",
+      "Return to the original area and confirm the placed block remains"
+    ],
+    "expected": "Only the nearby 3x3 chunk neighborhood is rendered; distant chunk groups are hidden, raycasting targets only visible blocks, and revisiting the original area restores its edits."
   }
 ]

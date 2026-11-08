@@ -5,7 +5,7 @@ A mobile-first 3D voxel sandbox game built with React, Three.js, TypeScript and 
 ## Current game systems
 
 - Deterministic, world-seed-driven procedural voxel terrain with forest, desert, tundra, highland, shore and dimension-specific terrain.
-- Progressive 16×16 chunk generation around the player; newly explored areas are generated on demand and generated chunk data is included in local saves.
+- Progressive 16×16 chunk generation around the player; newly explored areas are generated incrementally, distant chunk groups are hidden from rendering, and block edits remain in local world saves.
 - Seeded underground cave pockets and depth-based coal, copper, iron, crystal and gold veins.
 - Player movement physics with gravity, grounded jumping, terrain landing and collision against solid voxel blocks.
 - Five dimensions: Overworld, Nether, End, Sky Islands and Deep Ocean.
