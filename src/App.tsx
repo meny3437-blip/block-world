@@ -5,7 +5,7 @@ import { breakChestContents, depositBagIntoChest, withdrawChestToBag } from './c
 import { getAttackDamage, getIncomingDamage, selectWeapon } from './combat.js';
 import { terrainWave } from './terrain.js';
 import { collidesWithBlocks, stepVerticalMotion } from './physics.js';
-import { chunkKey, chunkCoordinate, CHUNK_SIZE } from './chunks.js';
+import { chunkKey, chunkCoordinate, chunkNeighborhood, CHUNK_SIZE } from './chunks.js';
 import { isCaveCell, oreAtDepth } from './caves.js';
 
 type Kind = string;
@@ -389,7 +389,7 @@ function App(){
       loadedChunksRef.current=Array.from(loadedChunks);
       worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);
     };
-    const loadChunksAround=(cx:number,cz:number)=>{for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){const x=cx+dx,z=cz+dz,id=chunkKey(x,z);addChunkWater(x,z);if(!loadedChunks.has(id)&&!queuedChunks.has(id)){queuedChunks.add(id);chunkQueue.push({x,z});}}};
+    const loadChunksAround=(cx:number,cz:number)=>{for(const chunk of chunkNeighborhood(cx,cz)){const {x,z,key:id}=chunk;addChunkWater(x,z);if(!loadedChunks.has(id)&&!queuedChunks.has(id)){queuedChunks.add(id);chunkQueue.push({x,z});}}};
     if(savedBlocksRef.current){savedBlocksRef.current.forEach(add);savedBlocksRef.current=null;}
     loadChunksAround(chunkCoordinate(playerPositionRef.current.x),chunkCoordinate(playerPositionRef.current.z));
     savedChunksRef.current=null;
