@@ -256,7 +256,7 @@ const hash=(x:number,z:number)=>{const v=Math.sin(x*127.1+z*311.7)*43758.5453;re
 
 function App(){
   const mount=useRef<HTMLDivElement>(null);
-  const worldRef=useRef<{breakBlock:()=>void;placeBlock:()=>void;attack:()=>void;jump:()=>void;drink:()=>void;eat:()=>void;save:()=>void}|null>(null);
+  const worldRef=useRef<{breakBlock:()=>void;placeBlock:()=>void;attack:()=>void;jump:()=>void;drink:()=>void;eat:()=>void;save:()=>void;usePortal:()=>void}|null>(null);
   const selectedRef=useRef<Kind>('grass');
   const controls=useRef({forward:0,side:0,lookX:0,lookY:0});
   const lookPointer=useRef({x:0,y:0});
@@ -351,18 +351,27 @@ function App(){
     const camp=new THREE.Group();const tentMat=new THREE.MeshStandardMaterial({color:0xb98a54});const tent=new THREE.Mesh(new THREE.ConeGeometry(2,2.6,4),tentMat);tent.position.set(2,1.2,2);camp.add(tent);camp.position.set(0,0,0);scene.add(camp);
     if(savedBlocksRef.current){blocks.forEach(v=>scene.remove(v.mesh));blocks.clear();savedBlocksRef.current.forEach(add);savedBlocksRef.current=null;}
     worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);
+    const portalBase=terrain(0,-12).h+1;
+    const portal=new THREE.Group();portal.position.set(0,portalBase,-12);scene.add(portal);
+    const obsidian=new THREE.MeshStandardMaterial({color:0x211936,roughness:.72});
+    const frameParts=[[-1.12,1.55,0,.42,3.35,.5],[1.12,1.55,0,.42,3.35,.5],[0,3.02,0,2.65,.42,.5],[0,.08,0,2.65,.42,.5]];
+    frameParts.forEach(([x,y,z,w,h,d])=>{const part=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),obsidian);part.position.set(x,y,z);portal.add(part);});
+    const portalSurface=new THREE.Mesh(new THREE.PlaneGeometry(1.85,2.75),new THREE.MeshBasicMaterial({color:dimension==='overworld'?0x8b42d6:0x5b37c8,transparent:true,opacity:.72,side:THREE.DoubleSide}));portalSurface.position.set(0,1.58,.03);portal.add(portalSurface);
+    const portalLight=new THREE.PointLight(dimension==='overworld'?0x9d58ff:0x5b8cff,1.5,7);portalLight.position.set(0,1.5,1);portal.add(portalLight);
     const ray=new THREE.Raycaster();const center=new THREE.Vector2(0,0);
     const target=()=>{ray.setFromCamera(center,camera);const hit=ray.intersectObjects([...blocks.values()].map(v=>v.mesh));return hit.find(h=>h.distance<7);};
     const breakBlock=()=>{const h=target();if(!h){setNotice('Підійди ближче до ресурсу');return;}const m=h.object as THREE.Mesh;const p=m.position;const k=key(Math.round(p.x),Math.round(p.y),Math.round(p.z));const b=blocks.get(k)?.block;if(!b)return;scene.remove(m);blocks.delete(k);const loot=b.kind==='leaf'||b.kind.endsWith('_leaves')?(Math.random()>.55?'berry':'wood'):b.kind==='grass'?'dirt':b.kind==='ore'?'ore':b.kind==='cactus'?'wood':b.kind.endsWith('_log')?'wood':b.kind;addItem(loot,1);worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);setBroken(v=>v+1);setNotice('Здобуто: '+(names[loot]||loot));};
     const placeBlock=()=>{const h=target();if(!h){setNotice('Наведи приціл на блок');return;}const m=h.object as THREE.Mesh;const n=h.face?.normal.clone().transformDirection(m.matrixWorld)||new THREE.Vector3(0,1,0);const p=m.position.clone().add(n).round();if(blocks.has(key(p.x,p.y,p.z)))return;const kind=selectedRef.current;if(mode==='survival'&&!consume(kind,1)){setNotice('Немає цього блока в рюкзаку');return;}add({x:p.x,y:p.y,z:p.z,kind});worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);setNotice('Блок встановлено');};
     const attack=()=>{setStats(s=>({...s,stamina:clamp(s.stamina-8)}));setNotice('Ти захищаєшся від небезпеки');};
     const jump=()=>{camera.position.y=Math.min(5,camera.position.y+.65);};
-    worldRef.current={breakBlock,placeBlock,attack,jump,drink,eat,save};
+    const portalTarget=dimension==='overworld'?'nether':'overworld';
+    const usePortal=()=>{if(camera.position.distanceTo(portal.position)>2.8){setNotice('Підійди до порталу та натисни G');return;}switchDimension(portalTarget);};
+    worldRef.current={breakBlock,placeBlock,attack,jump,drink,eat,save,usePortal};
     // Simple wandering wildlife and hostile night creatures.
     const mobs:THREE.Mesh[]=[];for(let i=0;i<5;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(.7,.8,.7),new THREE.MeshStandardMaterial({color:i%2?0x9b6a42:0x6e777d}));m.position.set((i-2)*5,.55,-7-i*2);scene.add(m);mobs.push(m);}
-    let yaw=0,pitch=0,frame=0,elapsed=0,last=performance.now();
+    let yaw=0,pitch=0,frame=0,elapsed=0,last=performance.now(),portalNearby=false;
     const padActionHeld={jump:false,break:false,place:false};
-    const onKey=(e:KeyboardEvent,down:boolean)=>{if(down&&e.repeat)return;const v=down?1:0;if(e.code==='KeyW'||e.code==='ArrowUp')controls.current.forward=v;if(e.code==='KeyS'||e.code==='ArrowDown')controls.current.forward=-v;if(e.code==='KeyA'||e.code==='ArrowLeft')controls.current.side=-v;if(e.code==='KeyD'||e.code==='ArrowRight')controls.current.side=v;if(down&&e.code==='Space'){jump();e.preventDefault();}if(down&&e.code==='KeyE')setPanel(p=>p==='bag'?'none':'bag');if(down&&e.code==='KeyF')attack();if(down&&e.code.startsWith('Digit')){const n=Number(e.code.slice(5))-1;if(hotbarItems[n]){selectedRef.current=hotbarItems[n];setSelected(hotbarItems[n]);}}};
+    const onKey=(e:KeyboardEvent,down:boolean)=>{if(down&&e.repeat)return;const v=down?1:0;if(e.code==='KeyW'||e.code==='ArrowUp')controls.current.forward=v;if(e.code==='KeyS'||e.code==='ArrowDown')controls.current.forward=-v;if(e.code==='KeyA'||e.code==='ArrowLeft')controls.current.side=-v;if(e.code==='KeyD'||e.code==='ArrowRight')controls.current.side=v;if(down&&e.code==='Space'){jump();e.preventDefault();}if(down&&e.code==='KeyE')setPanel(p=>p==='bag'?'none':'bag');if(down&&e.code==='KeyF')attack();if(down&&e.code==='KeyG')usePortal();if(down&&e.code.startsWith('Digit')){const n=Number(e.code.slice(5))-1;if(hotbarItems[n]){selectedRef.current=hotbarItems[n];setSelected(hotbarItems[n]);}}};
     const kd=(e:KeyboardEvent)=>onKey(e,true),ku=(e:KeyboardEvent)=>onKey(e,false);window.addEventListener('keydown',kd);window.addEventListener('keyup',ku);
     const pointer=(e:PointerEvent)=>{if(e.pointerType==='mouse'&&document.pointerLockElement===renderer.domElement){yaw-=e.movementX*.002;pitch-=e.movementY*.002;}};
     const mouseAction=(e:MouseEvent)=>{if(e.button===0)breakBlock();if(e.button===2)placeBlock();};
@@ -374,12 +383,13 @@ function App(){
       yaw-=controls.current.lookX*.035;pitch-=controls.current.lookY*.035;controls.current.lookX=0;controls.current.lookY=0;
       const pads=navigator.getGamepads?.()||[];const pad=pads[0];if(pad){const dz=.16;const px=Math.abs(pad.axes[0]||0)>dz?pad.axes[0]:0;const py=Math.abs(pad.axes[1]||0)>dz?pad.axes[1]:0;controls.current.side=px;controls.current.forward=-py;yaw-=(pad.axes[2]||0)*dt*2.4;pitch+=(pad.axes[3]||0)*dt*2.1;const jumpHeld=!!pad.buttons[0]?.pressed;const breakHeld=!!pad.buttons[2]?.pressed;const placeHeld=!!pad.buttons[1]?.pressed;if(jumpHeld&&!padActionHeld.jump)worldRef.current?.jump();if(breakHeld&&!padActionHeld.break)worldRef.current?.breakBlock();if(placeHeld&&!padActionHeld.place)worldRef.current?.placeBlock();padActionHeld.jump=jumpHeld;padActionHeld.break=breakHeld;padActionHeld.place=placeHeld;}else{padActionHeld.jump=false;padActionHeld.break=false;padActionHeld.place=false;}pitch=Math.max(-1.2,Math.min(1.2,pitch));camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;
       const f=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),r=new THREE.Vector3(f.z,0,-f.x);camera.position.addScaledVector(f,-controls.current.forward*dt*5);camera.position.addScaledVector(r,controls.current.side*dt*5);camera.position.y=Math.max(.7,Math.min(7,camera.position.y));playerPositionRef.current={x:camera.position.x,y:camera.position.y,z:camera.position.z};
+      const nearPortal=camera.position.distanceTo(portal.position)<2.8;if(nearPortal!==portalNearby){portalNearby=nearPortal;setNotice(nearPortal?'Портал поруч — натисни G, щоб перейти':'Досліджуй світ та шукай портал');}portalSurface.rotation.y=Math.sin(elapsed*1.8)*.08;portalSurface.material.opacity=.58+Math.sin(elapsed*2.5)*.14;
       const hour=statsRef.current.hour;const night=hour<6||hour>19;const light=night?.28:Math.max(.55,Math.sin((hour-6)/13*Math.PI)*1.4);sun.intensity=light;hemi.intensity=night?.48:1.7;const daySky=dimension==='nether'?0x542522:dimension==='end'?0x171323:dimension==='sky'?0x9bd8f2:dimension==='ocean'?0x367fa8:0x8cc9f1;scene.background!.set(night&&dimension==='overworld'?0x172743:daySky);scene.fog!.color.set(night&&dimension==='overworld'?0x172743:daySky);
       mobs.forEach((m,i)=>{m.position.x+=Math.sin(elapsed*.35+i)*dt*.35;m.position.z+=Math.cos(elapsed*.3+i)*dt*.25;if(night&&m.position.distanceTo(camera.position)<2.2&&Math.floor(elapsed*2)%8===0&&mode!=='creative')setStats(s=>({...s,health:clamp(s.health-2)}));});
       renderer.render(scene,camera);};
     animate();
     return()=>{cancelAnimationFrame(frame);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window.removeEventListener('resize',resize);document.removeEventListener('pointermove',pointer);renderer.domElement.removeEventListener('mousedown',mouseAction);renderer.domElement.removeEventListener('contextmenu',noMenu);renderer.dispose();cube.dispose();Object.values(mats).forEach(m=>m.dispose());if(host.contains(renderer.domElement))host.removeChild(renderer.domElement);};
-  },[worldSeed,dimension,mode,worldRevision,addItem,consume,drink,eat]);
+  },[worldSeed,dimension,mode,worldRevision,addItem,consume,drink,eat,switchDimension]);
 
   const move=(axis:'forward'|'side',v:number)=>{controls.current[axis]=v;};
   const joystickStart=(e:React.PointerEvent<HTMLDivElement>)=>{e.currentTarget.setPointerCapture(e.pointerId);joystickMove(e);};
