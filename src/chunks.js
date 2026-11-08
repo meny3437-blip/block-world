@@ -44,3 +44,16 @@ export function chunkColumnRange(chunkX, nextColumn = 0, columnBudget = 4) {
 export function visibleChunkKeys(chunkX, chunkZ, radius = 1) {
   return new Set(chunkNeighborhood(chunkX, chunkZ, radius).map((chunk) => chunk.key));
 }
+
+export function chunkVisibilityDelta(previousKeys, nextKeys) {
+  if (!Array.isArray(previousKeys) || !Array.isArray(nextKeys)
+    || [...previousKeys, ...nextKeys].some(key => typeof key !== 'string' || key.length === 0)) {
+    throw new TypeError('Chunk visibility keys must be non-empty strings');
+  }
+  const previous = new Set(previousKeys);
+  const next = new Set(nextKeys);
+  return {
+    hide: [...previous].filter(key => !next.has(key)),
+    show: [...next].filter(key => !previous.has(key))
+  };
+}

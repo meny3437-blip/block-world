@@ -69,3 +69,21 @@ test('visible chunk keys match the render neighborhood and shift without stale e
   assert.equal(shifted.has('2,0'), true);
   assert.equal(shifted.has('-2,0'), false);
 });
+
+import { chunkVisibilityDelta } from '../src/chunks.js';
+
+test('chunk visibility delta hides departed chunks and shows newly entered chunks', () => {
+  const previous = ['0,0', '0,1', '1,0', '1,1'];
+  const next = ['0,1', '0,2', '1,1', '1,2'];
+  assert.deepEqual(chunkVisibilityDelta(previous, next), {
+    hide: ['0,0', '1,0'],
+    show: ['0,2', '1,2']
+  });
+});
+
+test('chunk visibility delta handles unchanged sets and rejects invalid keys', () => {
+  assert.deepEqual(chunkVisibilityDelta(['-1,0'], ['-1,0']), { hide: [], show: [] });
+  assert.deepEqual(chunkVisibilityDelta([], ['0,0']), { hide: [], show: ['0,0'] });
+  assert.throws(() => chunkVisibilityDelta([''], []), TypeError);
+  assert.throws(() => chunkVisibilityDelta(null, []), TypeError);
+});

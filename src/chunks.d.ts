@@ -7,3 +7,5 @@ export function chunkNeighborhood(chunkX: number, chunkZ: number, radius?: numbe
 export function chunkColumnRange(chunkX: number, nextColumn?: number, columnBudget?: number): { start: number; end: number; nextColumn: number; complete: boolean };
 
 export function visibleChunkKeys(chunkX: number, chunkZ: number, radius?: number): Set<string>;
+
+export function chunkVisibilityDelta(previousKeys: string[], nextKeys: string[]): { hide: string[]; show: string[] };
