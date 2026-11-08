@@ -87,3 +87,22 @@ test('chunk visibility delta handles unchanged sets and rejects invalid keys', (
   assert.throws(() => chunkVisibilityDelta([''], []), TypeError);
   assert.throws(() => chunkVisibilityDelta(null, []), TypeError);
 });
+
+import { prioritizeChunkQueue } from '../src/chunks.js';
+
+test('chunk queue prioritizes nearby chunks while preserving stable order for ties', () => {
+  const queue = [
+    { x: 2, z: 0, nextColumn: 4 },
+    { x: 0, z: 0, nextColumn: 7 },
+    { x: -1, z: 0, nextColumn: 2 },
+    { x: 0, z: 1, nextColumn: 0 }
+  ];
+  assert.deepEqual(prioritizeChunkQueue(queue, 0, 0), [queue[1], queue[2], queue[3], queue[0]]);
+  assert.deepEqual(queue[0], { x: 2, z: 0, nextColumn: 4 });
+});
+
+test('chunk queue prioritization validates coordinates and partial progress', () => {
+  assert.throws(() => prioritizeChunkQueue(null, 0, 0), TypeError);
+  assert.throws(() => prioritizeChunkQueue([], 0.5, 0), TypeError);
+  assert.throws(() => prioritizeChunkQueue([{ x: 0, z: 0, nextColumn: 16 }], 0, 0), TypeError);
+});

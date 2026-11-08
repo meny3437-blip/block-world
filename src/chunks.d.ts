@@ -9,3 +9,5 @@ export function chunkColumnRange(chunkX: number, nextColumn?: number, columnBudg
 export function visibleChunkKeys(chunkX: number, chunkZ: number, radius?: number): Set<string>;
 
 export function chunkVisibilityDelta(previousKeys: string[], nextKeys: string[]): { hide: string[]; show: string[] };
+
+export function prioritizeChunkQueue(queue: { x: number; z: number; nextColumn: number }[], centerX: number, centerZ: number): { x: number; z: number; nextColumn: number }[];

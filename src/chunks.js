@@ -57,3 +57,14 @@ export function chunkVisibilityDelta(previousKeys, nextKeys) {
     show: [...next].filter(key => !previous.has(key))
   };
 }
+export function prioritizeChunkQueue(queue, centerX, centerZ) {
+  if (!Array.isArray(queue) || !Number.isSafeInteger(centerX) || !Number.isSafeInteger(centerZ)
+    || queue.some(item => !item || !Number.isSafeInteger(item.x) || !Number.isSafeInteger(item.z)
+      || !Number.isSafeInteger(item.nextColumn) || item.nextColumn < 0 || item.nextColumn >= CHUNK_SIZE)) {
+    throw new TypeError('Invalid chunk queue input');
+  }
+  return queue
+    .map((item, index) => ({ item, index, distance: (item.x - centerX) ** 2 + (item.z - centerZ) ** 2 }))
+    .sort((a, b) => a.distance - b.distance || a.index - b.index)
+    .map(entry => entry.item);
+}
