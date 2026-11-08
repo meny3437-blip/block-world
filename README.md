@@ -59,7 +59,7 @@ npm test
 
 GitHub Actions runs the automated inventory unit tests and the Vite production build for pushes and pull requests to `main`.
 
-`tests/inventory.test.mjs` contains executable Node.js tests for inventory collection, consumption and crafting. `tests/tests.json` is the manual gameplay QA plan; those gameplay scenarios still require browser/device testing and are not represented as automated tests.
+`tests/*.test.mjs` contains executable Node.js tests for inventory collection, consumption and crafting, chest transfers, weapon selection, attack damage and armor mitigation. `tests/tests.json` is the manual gameplay QA plan; those gameplay scenarios still require browser/device testing and are not represented as automated tests.
 
 ## Save data
 
