@@ -244,7 +244,8 @@ const names: Record<string,string> = {wood:'Деревина',stone:'Камін�
   redstone_block:'Редстоуновий блок',
   coal_block:'Вугільний блок'
 };
-const recipes = [
+type Recipe = { id:string; label:string; cost:Record<string,number>; give:number };
+const recipes:Recipe[] = [
   {id:'plank',label:'Дошки ×4',cost:{wood:1},give:4},
   {id:'stick',label:'Палиці ×4',cost:{plank:2},give:4},
   {id:'torch',label:'Смолоскип ×2',cost:{stick:1,ore:1},give:2},
@@ -333,7 +334,7 @@ function App(){
   useEffect(()=>{
     const host=mount.current;if(!host)return;
     setBossHealth(dimension==='end'?240:null);
-    const scene=new THREE.Scene();const skyColor=dimension==='nether'?0x542522:dimension==='end'?0x171323:dimension==='sky'?0x9bd8f2:dimension==='ocean'?0x367fa8:0x8cc9f1;scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,25,76);
+    const scene=new THREE.Scene();const skyColor=dimension==='nether'?0x542522:dimension==='end'?0x171323:dimension==='sky'?0x9bd8f2:dimension==='ocean'?0x367fa8:0x8cc9f1;const sceneBackground=new THREE.Color(skyColor);scene.background=sceneBackground;scene.fog=new THREE.Fog(skyColor,25,76);
     const camera=new THREE.PerspectiveCamera(72,host.clientWidth/host.clientHeight,.1,150);camera.position.set(playerPositionRef.current.x,playerPositionRef.current.y,playerPositionRef.current.z);
     const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.4));renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);
     const hemi=new THREE.HemisphereLight(0xffffff,0x66734b,1.7);scene.add(hemi);
@@ -490,7 +491,7 @@ function App(){
       if(mode==='survival'&&statsRef.current.health<=0&&!respawning){respawning=true;camera.position.set(0,terrain(0,8).h+2.22,8);verticalVelocity=0;grounded=true;playerPositionRef.current={x:0,y:camera.position.y,z:8};setStats(s=>({...s,health:100,hunger:Math.max(30,s.hunger),thirst:Math.max(30,s.thirst),stamina:100}));setNotice('Ти відродився на точці появи. Інвентар збережено');}
       else if(statsRef.current.health>0)respawning=false;
       const nearPortal=camera.position.distanceTo(portal.position)<2.8;if(nearPortal!==portalNearbyLocal){portalNearbyLocal=nearPortal;setPortalNearby(nearPortal);setNotice(nearPortal?'Портал поруч — натисни кнопку порталу або G':'Досліджуй світ та шукай портал');}portalSurface.rotation.y=Math.sin(elapsed*1.8)*.08;portalSurface.material.opacity=.58+Math.sin(elapsed*2.5)*.14;
-      const hour=statsRef.current.hour;const night=hour<6||hour>19;const light=night?.28:Math.max(.55,Math.sin((hour-6)/13*Math.PI)*1.4);sun.intensity=light;hemi.intensity=night?.48:1.7;const daySky=dimension==='nether'?0x542522:dimension==='end'?0x171323:dimension==='sky'?0x9bd8f2:dimension==='ocean'?0x367fa8:0x8cc9f1;scene.background!.set(night&&dimension==='overworld'?0x172743:daySky);scene.fog!.color.set(night&&dimension==='overworld'?0x172743:daySky);
+      const hour=statsRef.current.hour;const night=hour<6||hour>19;const light=night?.28:Math.max(.55,Math.sin((hour-6)/13*Math.PI)*1.4);sun.intensity=light;hemi.intensity=night?.48:1.7;const daySky=dimension==='nether'?0x542522:dimension==='end'?0x171323:dimension==='sky'?0x9bd8f2:dimension==='ocean'?0x367fa8:0x8cc9f1;sceneBackground.set(night&&dimension==='overworld'?0x172743:daySky);scene.fog!.color.set(night&&dimension==='overworld'?0x172743:daySky);
       mobActors.forEach((actor)=>{
         const m=actor.mesh;actor.cooldown=Math.max(0,actor.cooldown-dt);
         if(!m.visible){if(elapsed>=actor.respawnAt){m.visible=true;actor.hp=actor.maxHp;if(actor.boss)setBossHealth(actor.maxHp);m.position.set(actor.boss?0:(Math.random()-.5)*18,actor.boss?1.2:.05,actor.boss?-20:-10-Math.random()*12);}return;}
@@ -510,7 +511,6 @@ function App(){
     return()=>{cancelAnimationFrame(frame);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window.removeEventListener('resize',resize);document.removeEventListener('pointermove',pointer);renderer.domElement.removeEventListener('mousedown',mouseAction);renderer.domElement.removeEventListener('contextmenu',noMenu);renderer.dispose();cube.dispose();mobGeometries.forEach(geometry=>geometry.dispose());mobMaterials.forEach(material=>material.dispose());Object.values(mats).forEach(m=>m.dispose());if(host.contains(renderer.domElement))host.removeChild(renderer.domElement);};
   },[worldSeed,dimension,mode,worldRevision,addItem,consume,drink,eat,switchDimension]);
 
-  const move=(axis:'forward'|'side',v:number)=>{controls.current[axis]=v;};
   const joystickStart=(e:React.PointerEvent<HTMLDivElement>)=>{e.currentTarget.setPointerCapture(e.pointerId);joystickMove(e);};
   const joystickMove=(e:React.PointerEvent<HTMLDivElement>)=>{if(e.buttons===0&&e.type==='pointermove')return;const r=e.currentTarget.getBoundingClientRect();const dx=(e.clientX-(r.left+r.width/2))/(r.width*.34);const dy=(e.clientY-(r.top+r.height/2))/(r.height*.34);controls.current.side=Math.max(-1,Math.min(1,dx));controls.current.forward=-Math.max(-1,Math.min(1,dy));};
   const joystickEnd=()=>{controls.current.forward=0;controls.current.side=0;};
