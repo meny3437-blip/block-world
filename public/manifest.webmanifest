@@ -1,0 +1,20 @@
+{
+  "name": "Block World — Survival",
+  "short_name": "Block World",
+  "description": "Відкритий voxel-світ для виживання, будівництва та дослідження.",
+  "lang": "uk",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#142019",
+  "theme_color": "#17251e",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
