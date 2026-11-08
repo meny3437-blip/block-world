@@ -9,11 +9,13 @@ A mobile-first 3D voxel sandbox game built with React, Three.js, TypeScript and 
 - More than 100 block types in the building catalog.
 - Survival and Creative modes with health, hunger, thirst, stamina, weather and a day/night cycle.
 - 27-slot inventory, hotbar, crafting recipes, resource collection and local autosave.
+- Craftable, interactive chests with per-chest storage that persists separately in each dimension.
+- Survival tool progression: axes are required to harvest logs and pickaxes to mine mineral ores; Creative mode bypasses tool requirements.
 - Touch joystick, touch camera controls, mobile action buttons, keyboard/mouse and browser gamepad support.
 - Portal travel, independently saved dimension terrain and shared player inventory.
 - Passive animals and hostile monsters with creature health, drops, night pursuit and respawning.
 - Craftable wooden, stone and iron swords; bow and arrows; leather armor.
-- Ender Dragon boss encounter in the End and dragon armor crafted from its scales.
+- Ender Dragon boss encounter in the End with a live boss health bar, and dragon armor crafted from its scales.
 
 ## Controls
 
@@ -25,11 +27,11 @@ A mobile-first 3D voxel sandbox game built with React, Three.js, TypeScript and 
 | Place block | Right mouse button | Block button |
 | Jump | Space | Up-arrow button |
 | Attack / shoot | F | Sword button |
-| Inventory | E | Backpack button |
+| Inventory / open a targeted chest | E | Backpack button (opens a chest when aimed at one) |
 | Portal | G | Portal button when nearby |
 | Select hotbar | 1–9 | Tap a hotbar slot |
 
-A bow with arrows in the inventory enables ranged attacks. The strongest available sword is selected automatically. Armor is applied automatically, with dragon armor taking priority over leather armor.
+A bow with arrows in the inventory enables ranged attacks. The strongest available sword is selected automatically. Armor is applied automatically, with dragon armor taking priority over leather armor. Chests transfer all carried items in or out and save their contents locally with the world.
 
 ## Run locally
 
