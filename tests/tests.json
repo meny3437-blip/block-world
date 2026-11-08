@@ -424,5 +424,25 @@
       "Return to the Overworld and verify the original chest contents remain unchanged"
     ],
     "expected": "The chest panel closes on dimension change and each dimension displays only its own independently saved chest contents."
+  },
+  {
+    "name": "Smelt copper, iron and gold into matching ingots",
+    "viewport": "desktop and mobile",
+    "covers": [
+      "copper ore smelting",
+      "iron ore smelting",
+      "gold ore smelting",
+      "coal fuel consumption",
+      "iron ingot crafting progression"
+    ],
+    "description": "Checks that each mined metal uses its own ore and coal to produce the corresponding ingot.",
+    "steps": [
+      "Collect at least two copper ore and one coal, then craft a copper ingot",
+      "Collect at least two iron ore and one coal, then craft an iron ingot",
+      "Collect at least two gold ore and one coal, then craft a gold ingot",
+      "Craft an iron sword and armor using iron ingots",
+      "Verify insufficient ore or coal does not consume any ingredients"
+    ],
+    "expected": "Copper, iron and gold smelting recipes consume exactly two matching ore plus one coal; iron equipment requires iron ingots, and failed crafting leaves the inventory unchanged."
   }
 ]

@@ -127,7 +127,7 @@ type Stats = { health:number; hunger:number; thirst:number; stamina:number; day:
 type Bag = Record<string,number>;
 const STORE = 'block-world-survival-v2';
 const PLAYER_STORE = `${STORE}:player`;
-const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'Сире м’ясо',cooked_meat:'Смажене м’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',bone:'Кістка',dragon_scale:'Луска дракона',dragon_armor:'Драконяча броня',arrow:'Стріла',leather_armor:'Шкіряна броня',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
+const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'Сире м’ясо',cooked_meat:'Смажене м’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',bone:'Кістка',dragon_scale:'Луска дракона',dragon_armor:'Драконяча броня',arrow:'Стріла',leather_armor:'Шкіряна броня',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Мідний злиток',iron_ingot:'Залізний злиток',gold_ingot:'Золотий злиток',
   oak_planks:'Дубові дошки',
   birch_planks:'Березові дошки',
   spruce_planks:'Ялинові дошки',
@@ -249,17 +249,19 @@ const recipes = [
   {id:'axe',label:'Кам’яна сокира',cost:{stick:2,stone:2},give:1},
   {id:'wood_sword',label:'Дерев’яний меч',cost:{stick:1,plank:2},give:1},
   {id:'stone_sword',label:'Кам’яний меч',cost:{stick:1,stone:2},give:1},
-  {id:'iron_sword',label:'Залізний меч',cost:{stick:1,ingot:2},give:1},
+  {id:'iron_sword',label:'Залізний меч',cost:{stick:1,iron_ingot:2},give:1},
   {id:'chest',label:'Скриня',cost:{plank:8},give:1},
-  {id:'leather_armor',label:'Шкіряна броня',cost:{leather:4,ingot:1},give:1},
-  {id:'dragon_armor',label:'Драконяча броня',cost:{dragon_scale:4,ingot:4},give:1},
+  {id:'leather_armor',label:'Шкіряна броня',cost:{leather:4,iron_ingot:1},give:1},
+  {id:'dragon_armor',label:'Драконяча броня',cost:{dragon_scale:4,iron_ingot:4},give:1},
   {id:'shelter',label:'Похідне укриття',cost:{wood:5,plank:4},give:1},
   {id:'campfire',label:'Багаття',cost:{wood:3,stone:2},give:1},
   {id:'cooked_meat',label:'Смажене м’ясо',cost:{meat:1,coal:1},give:1},
   {id:'fishingrod',label:'Вудка',cost:{stick:3,plank:2},give:1},
   {id:'bow',label:'Лук',cost:{stick:3,plank:2},give:1},
   {id:'arrow',label:'Стріли ×4',cost:{stick:1,bone:1},give:4},
-  {id:'ingot',label:'Металевий злиток',cost:{copper:2,coal:1},give:1}
+  {id:'ingot',label:'Мідний злиток',cost:{copper:2,coal:1},give:1},
+  {id:'iron_ingot',label:'Залізний злиток',cost:{iron:2,coal:1},give:1},
+  {id:'gold_ingot',label:'Золотий злиток',cost:{gold:2,coal:1},give:1}
 ];
 const clamp=(n:number)=>Math.max(0,Math.min(100,n));
 const key=(x:number,y:number,z:number)=>`${x},${y},${z}`;
