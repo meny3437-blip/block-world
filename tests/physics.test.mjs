@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { stepVerticalMotion } from '../src/physics.js';
 
 test('falling player lands on the terrain and stops', () => {
-  const result = stepVerticalMotion(2, -8, 1, 0.05);
+  const result = stepVerticalMotion(1.2, -8, 1, 0.05);
   assert.deepEqual(result, { y: 1, velocity: 0, grounded: true });
 });
 
