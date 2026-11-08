@@ -4,7 +4,7 @@ import { isCaveCell, oreAtDepth } from '../src/caves.js';
 
 test('cave carving is deterministic for the same world seed', () => {
   assert.equal(isCaveCell(12, -7, -4, 12345), isCaveCell(12, -7, -4, 12345));
-  assert.notEqual(isCaveCell(12, -7, -4, 12345), isCaveCell(12, -7, -4, 54321));
+  assert.notEqual(isCaveCell(-20, -7, 7, 12345), isCaveCell(-20, -7, 7, 54321));
 });
 
 test('cave generation produces both solid and carved cells', () => {
