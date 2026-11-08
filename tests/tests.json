@@ -138,5 +138,26 @@
       "Fight it and verify health decreases only at a controlled interval"
     ],
     "expected": "Attacks hit only nearby creatures in front of the player, stamina is consumed, defeated creatures disappear and drop meat (and sometimes leather), hostile creatures pursue and deal controlled damage at night, and defeated creatures respawn after a delay."
+  },
+  {
+    "name": "Craft swords and verify combat damage tiers",
+    "viewport": "mobile",
+    "covers": [
+      "wooden sword recipe",
+      "stone sword recipe",
+      "iron sword recipe",
+      "automatic best available sword selection",
+      "weapon damage tiers",
+      "weapon inventory persistence"
+    ],
+    "description": "Verifies crafted weapons improve melee damage and that the strongest available sword is selected automatically.",
+    "steps": [
+      "Collect planks, sticks, stone and metal ingots",
+      "Craft a wooden, stone or iron sword in the workshop",
+      "Approach a creature and attack while facing it",
+      "Compare the number of hits required with each weapon tier",
+      "Save and reload, then confirm the weapon remains in inventory"
+    ],
+    "expected": "The workshop crafts three sword tiers; melee attacks automatically use the strongest sword in inventory, with iron dealing the most damage, stone intermediate damage, wood lower damage and unarmed attacks the least."
   }
 ]

@@ -124,7 +124,7 @@ type Stats = { health:number; hunger:number; thirst:number; stamina:number; day:
 type Bag = Record<string,number>;
 const STORE = 'block-world-survival-v2';
 const PLAYER_STORE = `${STORE}:player`;
-const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'М’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
+const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'М’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
   oak_planks:'Дубові дошки',
   birch_planks:'Березові дошки',
   spruce_planks:'Ялинові дошки',
@@ -244,6 +244,9 @@ const recipes = [
   {id:'torch',label:'Смолоскип ×2',cost:{stick:1,ore:1},give:2},
   {id:'pickaxe',label:'Кам’яна кирка',cost:{stick:2,stone:3},give:1},
   {id:'axe',label:'Кам’яна сокира',cost:{stick:2,stone:2},give:1},
+  {id:'wood_sword',label:'Дерев’яний меч',cost:{stick:1,plank:2},give:1},
+  {id:'stone_sword',label:'Кам’яний меч',cost:{stick:1,stone:2},give:1},
+  {id:'iron_sword',label:'Залізний меч',cost:{stick:1,ingot:2},give:1},
   {id:'shelter',label:'Похідне укриття',cost:{wood:5,plank:4},give:1},
   {id:'campfire',label:'Багаття',cost:{wood:3,stone:2},give:1},
   {id:'fishingrod',label:'Вудка',cost:{stick:3,plank:2},give:1},
@@ -376,7 +379,9 @@ function App(){
       }
       if(!target){setNotice('Поруч немає істоти — наведися на моба та атакуй');return;}
       setStats(s=>({...s,stamina:clamp(s.stamina-8)}));
-      target.hp-=34;
+      const weapon=bagRef.current.iron_sword?'iron_sword':bagRef.current.stone_sword?'stone_sword':bagRef.current.wood_sword?'wood_sword':'hand';
+      const damage=weapon==='iron_sword'?60:weapon==='stone_sword'?42:weapon==='wood_sword'?28:18;
+      target.hp-=damage;
       target.mesh.position.x+=forward.x*.28;target.mesh.position.z+=forward.z*.28;
       if(target.hp<=0){
         target.mesh.visible=false;target.respawnAt=elapsed+18;
@@ -384,7 +389,7 @@ function App(){
         addItem('meat',food);
         if(Math.random()>.55)addItem('leather',1);
         setNotice(`Перемога! Здобуто м'ясо ×${food}${target.hostile?' та досвід бою':''}`);
-      }else setNotice(`Влучання! Здоров'я істоти: ${target.hp}/${target.maxHp}`);
+      }else setNotice(`Влучання мечем (${names[weapon]||'рукою'})! Здоров'я істоти: ${target.hp}/${target.maxHp}`);
     };
     const jump=()=>{camera.position.y=Math.min(5,camera.position.y+.65);};
     const portalTarget=dimension==='overworld'?'nether':'overworld';
