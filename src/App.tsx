@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { addItemToBag, consumeItemFromBag, craftItemInBag } from './inventory.js';
+import { getAttackDamage, getIncomingDamage, selectWeapon } from './combat.js';
 
 type Kind = string;
 type BlockInfo = [id:string, label:string, color:number];
@@ -399,8 +400,8 @@ function App(){
       if(!target){setNotice('Поруч немає істоти — наведися на моба та атакуй');return;}
       if(ranged&&!consume('arrow',1)){setNotice('Закінчилися стріли');return;}
       setStats(s=>({...s,stamina:clamp(s.stamina-8)}));
-      const weapon=ranged?'bow':bagRef.current.iron_sword?'iron_sword':bagRef.current.stone_sword?'stone_sword':bagRef.current.wood_sword?'wood_sword':'hand';
-      const damage=ranged?36:weapon==='iron_sword'?60:weapon==='stone_sword'?42:weapon==='wood_sword'?28:18;
+      const weapon=selectWeapon(bagRef.current,ranged);
+      const damage=getAttackDamage(bagRef.current,ranged);
       target.hp-=damage;
       if(target.boss)setBossHealth(Math.max(0,target.hp));
       if(!ranged){target.mesh.position.x+=forward.x*.28;target.mesh.position.z+=forward.z*.28;}
@@ -475,7 +476,7 @@ function App(){
         const distance=Math.hypot(dx,dz);
         if(actor.hostile&&(actor.boss||night)&&mode!=='creative'&&distance<(actor.boss?30:15)&&distance>.001){
           const speed=actor.boss?1.05:.72;m.position.x+=(dx/distance)*dt*speed;m.position.z+=(dz/distance)*dt*speed;
-          if(distance<(actor.boss?2.5:1.55)&&actor.cooldown<=0){actor.cooldown=actor.boss?2.1:1.35;const damage=bagRef.current.dragon_armor?(actor.boss?4:1):bagRef.current.leather_armor?(actor.boss?7:3):(actor.boss?12:5);setStats(s=>({...s,health:clamp(s.health-damage)}));setNotice(actor.boss?'Дракон Краю атакує! Ухиляйся та бий мечем ⚔':bagRef.current.dragon_armor?'Драконяча броня поглинула частину шкоди!':bagRef.current.leather_armor?'Броня послабила удар ворога! Відбийся кнопкою ⚔':'На тебе напав ворог! Відбийся кнопкою ⚔');}
+          if(distance<(actor.boss?2.5:1.55)&&actor.cooldown<=0){actor.cooldown=actor.boss?2.1:1.35;const damage=getIncomingDamage(bagRef.current,actor.boss);setStats(s=>({...s,health:clamp(s.health-damage)}));setNotice(actor.boss?'Дракон Краю атакує! Ухиляйся та бий мечем ⚔':bagRef.current.dragon_armor?'Драконяча броня поглинула частину шкоди!':bagRef.current.leather_armor?'Броня послабила удар ворога! Відбийся кнопкою ⚔':'На тебе напав ворог! Відбийся кнопкою ⚔');}
         }else{
           m.position.x+=Math.sin(elapsed*.35+actor.phase)*dt*.28;
           m.position.z+=Math.cos(elapsed*.3+actor.phase)*dt*.2;

@@ -385,5 +385,25 @@
       "Switch to Creative mode and verify blocks can be mined without tools"
     ],
     "expected": "Survival mode blocks log harvesting without an axe and ore harvesting without a pickaxe; after crafting the required tool the block can be collected, while Creative mode bypasses both checks."
+  },
+  {
+    "name": "Verify weapon damage and armor mitigation rules",
+    "viewport": "desktop",
+    "covers": [
+      "unarmed damage",
+      "wood stone and iron sword tiers",
+      "bow ranged damage",
+      "automatic strongest weapon selection",
+      "leather armor protection",
+      "dragon armor protection",
+      "boss damage modifiers"
+    ],
+    "description": "Uses automated unit tests to validate combat balance independently of the Three.js scene.",
+    "steps": [
+      "Run npm test",
+      "Verify unarmed, sword and bow damage tiers",
+      "Verify leather and dragon armor damage reduction for regular mobs and the Ender Dragon"
+    ],
+    "expected": "All combat calculation tests pass: iron swords out-damage stone and wooden swords, bow damage is consistent, and dragon armor provides stronger protection than leather armor."
   }
 ]
