@@ -96,5 +96,25 @@
       "Connect a supported gamepad and use its sticks and action buttons"
     ],
     "expected": "Keyboard movement and actions respond, and a connected browser-compatible gamepad can move, look, jump, break and place."
+  },
+  {
+    "name": "Travel between five independently saved dimensions",
+    "sanity": true,
+    "viewport": "mobile",
+    "covers": [
+      "Overworld Nether End Sky Islands Deep Ocean dimension selector",
+      "dimension-specific terrain palettes and block types",
+      "independent local save keys per dimension",
+      "restore each dimension seed blocks and player position"
+    ],
+    "description": "Verifies each dimension can be entered and revisited without overwriting another dimension's world state.",
+    "steps": [
+      "Open the world panel",
+      "Enter Nether and observe netherrack terrain",
+      "Enter End, Sky Islands and Deep Ocean",
+      "Return to Overworld and confirm its saved state remains intact",
+      "Save progress in two dimensions and reload each"
+    ],
+    "expected": "Each dimension loads its own generated terrain and restores its own seed, edited blocks, inventory state and player position."
   }
 ]
