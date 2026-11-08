@@ -15,3 +15,10 @@ export function withdrawChestToBag(bag, chest) {
   }
   return { bag: nextBag, chest: {} };
 }
+
+export function breakChestContents(bag, chestStorage, chestId) {
+  const result = withdrawChestToBag(bag, chestStorage[chestId] || {});
+  const nextStorage = { ...chestStorage };
+  delete nextStorage[chestId];
+  return { bag: result.bag, chestStorage: nextStorage };
+}

@@ -28,3 +28,11 @@ test('chest transfers reject invalid counts without mutating inputs', () => {
   assert.deepEqual(chest, { stone: 1 });
   assert.throws(() => withdrawChestToBag({}, { torch: 1.5 }), RangeError);
 });
+
+test('breaking a chest returns its contents and removes its storage entry', () => {
+  const bag = { wood: 1 };
+  const storage = { '1,2,3': { torch: 4 }, '8,0,2': { stone: 2 } };
+  const result = breakChestContents(bag, storage, '1,2,3');
+  assert.deepEqual(result, { bag: { wood: 1, torch: 4 }, chestStorage: { '8,0,2': { stone: 2 } } });
+  assert.deepEqual(storage, { '1,2,3': { torch: 4 }, '8,0,2': { stone: 2 } });
+});

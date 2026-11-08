@@ -344,9 +344,10 @@
       "Aim at the chest and press E on desktop or the inventory action button on mobile",
       "Deposit all items and close the chest",
       "Reload or switch dimensions and return to the chest",
-      "Open the same chest and withdraw the stored items"
+      "Open the same chest and withdraw the stored items",
+      "Break a chest that contains items and confirm its contents return to the player and its old storage entry is cleared"
     ],
-    "expected": "A chest can be crafted from eight planks or selected in Creative mode; only a targeted chest opens, deposit and withdraw transfer item counts without loss, and contents persist independently for each chest and dimension."
+    "expected": "A chest can be crafted from eight planks or selected in Creative mode; targeted interaction opens it, deposit and withdraw transfer item counts without loss, contents persist by chest and dimension, and breaking a chest returns its contents rather than orphaning them."
   },
   {
     "name": "Track Ender Dragon health during the boss fight",
