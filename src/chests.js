@@ -31,6 +31,16 @@ export function withdrawChestToBag(bag, chest) {
   return { bag: addCounts(bag, chest), chest: {} };
 }
 
+export function breakChestContents(bag, chestStorage, chestKey) {
+  validateCounts(bag);
+  const contents = chestStorage[chestKey] || {};
+  validateCounts(contents);
+  const nextBag = addCounts(bag, contents);
+  const nextStorage = { ...chestStorage };
+  delete nextStorage[chestKey];
+  return { bag: nextBag, chestStorage: nextStorage };
+}
+
 export function breakChestContents(bag, chestStorage, chestId) {
   const result = withdrawChestToBag(bag, chestStorage[chestId] || {});
   const nextStorage = { ...chestStorage };
