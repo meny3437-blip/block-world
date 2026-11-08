@@ -198,5 +198,25 @@
       "Open the inventory and inspect all remaining quantities"
     ],
     "expected": "Each action immediately updates the shared inventory, no resource is consumed below zero, and rapid actions do not lose or duplicate items."
+  },
+  {
+    "name": "Identify animal and monster models with creature-specific drops",
+    "viewport": "desktop",
+    "covers": [
+      "six distinct low-poly creature models",
+      "three passive animal species",
+      "three hostile monster species",
+      "creature-specific names and health",
+      "meat leather and bone drops",
+      "scene geometry and material cleanup"
+    ],
+    "description": "Verifies that the world presents recognizable animal and monster silhouettes and that defeated creatures provide the appropriate resource drops.",
+    "steps": [
+      "Explore the spawn area and identify cow, sheep and pig models",
+      "Defeat a passive animal and inspect its meat and leather drops",
+      "Wait until night and identify zombie, skeleton and spider models",
+      "Defeat a hostile monster and inspect its meat and bone drops"
+    ],
+    "expected": "Six visually distinct creature types are rendered; passive animals and hostile monsters have separate health values and drop tables, and all mob geometries and materials are disposed when the world scene is rebuilt."
   }
 ]

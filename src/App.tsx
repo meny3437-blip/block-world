@@ -125,7 +125,7 @@ type Stats = { health:number; hunger:number; thirst:number; stamina:number; day:
 type Bag = Record<string,number>;
 const STORE = 'block-world-survival-v2';
 const PLAYER_STORE = `${STORE}:player`;
-const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'М’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',leather_armor:'Шкіряна броня',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
+const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'М’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',bone:'Кістка',leather_armor:'Шкіряна броня',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
   oak_planks:'Дубові дошки',
   birch_planks:'Березові дошки',
   spruce_planks:'Ялинові дошки',
@@ -388,26 +388,44 @@ function App(){
         target.mesh.visible=false;target.respawnAt=elapsed+18;
         const food=target.hostile?1:2;
         addItem('meat',food);
-        if(Math.random()>.55)addItem('leather',1);
-        setNotice(`Перемога! Здобуто м'ясо ×${food}${target.hostile?' та досвід бою':''}`);
-      }else setNotice(`Влучання мечем (${names[weapon]||'рукою'})! Здоров'я істоти: ${target.hp}/${target.maxHp}`);
+        if(Math.random()>.45)addItem(target.hostile?'bone':'leather',1);
+        setNotice(`Перемога над істотою «${target.name}»! Здобуто м'ясо ×${food}`);
+      }else setNotice(`Влучання по «${target.name}» (${names[weapon]||'рукою'})! Здоров'я: ${target.hp}/${target.maxHp}`);
     };
     const jump=()=>{camera.position.y=Math.min(5,camera.position.y+.65);};
     const portalTarget=dimension==='overworld'?'nether':'overworld';
     const usePortal=()=>{if(camera.position.distanceTo(portal.position)>2.8){setNotice('Підійди до порталу та натисни G');return;}switchDimension(portalTarget);};
     worldRef.current={breakBlock,placeBlock,attack,jump,drink,eat,save,usePortal};
-    // Living creatures: passive animals drop food; hostile creatures hunt at night.
-    type MobActor={mesh:THREE.Mesh;hp:number;maxHp:number;hostile:boolean;cooldown:number;respawnAt:number;phase:number};
-    const mobGeometry=new THREE.BoxGeometry(.78,.82,.72);
+    // Distinct low-poly animals and monsters. Passive creatures provide food; hostile ones hunt at night.
+    type MobActor={mesh:THREE.Group;name:string;hp:number;maxHp:number;hostile:boolean;cooldown:number;respawnAt:number;phase:number};
+    const mobBodyGeometry=new THREE.BoxGeometry(.78,.52,.48);
+    const mobHeadGeometry=new THREE.BoxGeometry(.42,.42,.42);
+    const mobLegGeometry=new THREE.BoxGeometry(.17,.38,.17);
+    const mobEyeGeometry=new THREE.BoxGeometry(.09,.09,.05);
+    const mobGeometries=[mobBodyGeometry,mobHeadGeometry,mobLegGeometry,mobEyeGeometry];
     const mobActors:MobActor[]=[];
-    const mobColors=[0x9b6a42,0xd2c0a2,0x66717d,0x4b374f,0x344b3d,0x8b4939];
+    const mobMaterials:THREE.Material[]=[];
+    const mobNames=['Корова','Вівця','Свиня','Зомбі','Скелет','Павук'];
+    const mobColors=[0x79543a,0xe1d8c7,0xd58d9b,0x4b8b55,0x9ca4a8,0x4c3934];
+    const hostileEyes=new THREE.MeshStandardMaterial({color:0xff3028,emissive:0x6b0808});
+    const passiveEyes=new THREE.MeshStandardMaterial({color:0x181818});
+    mobMaterials.push(hostileEyes,passiveEyes);
     for(let i=0;i<6;i++){
-      const material=new THREE.MeshStandardMaterial({color:mobColors[i],roughness:.86});
-      const mesh=new THREE.Mesh(mobGeometry,material);
-      mesh.position.set((i-2.5)*4,.55,-8-(i%3)*3);
-      mesh.castShadow=true;scene.add(mesh);
-      const maxHp=i<2?45:i===2?70:55;
-      mobActors.push({mesh,hp:maxHp,maxHp,hostile:i>=2,cooldown:0,respawnAt:0,phase:i*1.7});
+      const material=new THREE.MeshStandardMaterial({color:mobColors[i],roughness:.86});mobMaterials.push(material);
+      const mesh=new THREE.Group();
+      const body=new THREE.Mesh(mobBodyGeometry,material);body.position.y=.55;mesh.add(body);
+      const head=new THREE.Mesh(mobHeadGeometry,material);head.position.set(0,.91,-.34);mesh.add(head);
+      const eyeMaterial=i>=3?hostileEyes:passiveEyes;
+      for(const side of [-1,1]){const eye=new THREE.Mesh(mobEyeGeometry,eyeMaterial);eye.position.set(side*.105,.96,-.56);mesh.add(eye);}
+      for(const x of [-.23,.23])for(const z of [-.14,.14]){const leg=new THREE.Mesh(mobLegGeometry,material);leg.position.set(x,.2,z);mesh.add(leg);}
+      if(i===1)mesh.scale.set(1.12,1.08,1.12);
+      if(i===2)mesh.scale.set(.92,.88,.92);
+      if(i===5)mesh.scale.set(1.22,.7,1.3);
+      mesh.position.set((i-2.5)*4,.05,-8-(i%3)*3);
+      mesh.traverse(part=>{if(part instanceof THREE.Mesh)part.castShadow=true;});
+      scene.add(mesh);
+      const maxHp=[50,45,40,70,55,60][i];
+      mobActors.push({mesh,name:mobNames[i],hp:maxHp,maxHp,hostile:i>=3,cooldown:0,respawnAt:0,phase:i*1.7});
     }
     let yaw=0,pitch=0,frame=0,elapsed=0,last=performance.now(),portalNearbyLocal=false;
     const padActionHeld={jump:false,break:false,place:false};
@@ -441,7 +459,7 @@ function App(){
       });
       renderer.render(scene,camera);};
     animate();
-    return()=>{cancelAnimationFrame(frame);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window.removeEventListener('resize',resize);document.removeEventListener('pointermove',pointer);renderer.domElement.removeEventListener('mousedown',mouseAction);renderer.domElement.removeEventListener('contextmenu',noMenu);renderer.dispose();cube.dispose();mobGeometry.dispose();mobActors.forEach(actor=>{if(actor.mesh.material instanceof THREE.Material)actor.mesh.material.dispose();});Object.values(mats).forEach(m=>m.dispose());if(host.contains(renderer.domElement))host.removeChild(renderer.domElement);};
+    return()=>{cancelAnimationFrame(frame);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window.removeEventListener('resize',resize);document.removeEventListener('pointermove',pointer);renderer.domElement.removeEventListener('mousedown',mouseAction);renderer.domElement.removeEventListener('contextmenu',noMenu);renderer.dispose();cube.dispose();mobGeometries.forEach(geometry=>geometry.dispose());mobMaterials.forEach(material=>material.dispose());Object.values(mats).forEach(m=>m.dispose());if(host.contains(renderer.domElement))host.removeChild(renderer.domElement);};
   },[worldSeed,dimension,mode,worldRevision,addItem,consume,drink,eat,switchDimension]);
 
   const move=(axis:'forward'|'side',v:number)=>{controls.current[axis]=v;};
