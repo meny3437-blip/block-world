@@ -460,5 +460,23 @@
       "Return to the same seed and compare the terrain profile"
     ],
     "expected": "Different seeds produce different deterministic terrain while reusing the same seed reproduces the same profile."
+  },
+  {
+    "name": "Jump and gravity physics",
+    "viewport": "desktop and mobile",
+    "covers": [
+      "jump input",
+      "gravity",
+      "terrain landing",
+      "respawn height"
+    ],
+    "description": "Checks that jumping follows a vertical arc and the player lands on the current terrain height.",
+    "steps": [
+      "Move to a flat or sloped terrain area",
+      "Press Space or the jump control",
+      "Observe the player rise and fall back to the surface",
+      "Fall to zero health and verify respawn places the player above the ground"
+    ],
+    "expected": "Jumping applies upward velocity, gravity returns the player to the terrain surface, and respawn starts above ground."
   }
 ]
