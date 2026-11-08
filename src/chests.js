@@ -41,9 +41,3 @@ export function breakChestContents(bag, chestStorage, chestKey) {
   return { bag: nextBag, chestStorage: nextStorage };
 }
 
-export function breakChestContents(bag, chestStorage, chestId) {
-  const result = withdrawChestToBag(bag, chestStorage[chestId] || {});
-  const nextStorage = { ...chestStorage };
-  delete nextStorage[chestId];
-  return { bag: result.bag, chestStorage: nextStorage };
-}
