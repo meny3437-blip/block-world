@@ -248,6 +248,7 @@ const recipes = [
   {id:'wood_sword',label:'Дерев’яний меч',cost:{stick:1,plank:2},give:1},
   {id:'stone_sword',label:'Кам’яний меч',cost:{stick:1,stone:2},give:1},
   {id:'iron_sword',label:'Залізний меч',cost:{stick:1,ingot:2},give:1},
+  {id:'chest',label:'Скриня',cost:{plank:8},give:1},
   {id:'leather_armor',label:'Шкіряна броня',cost:{leather:4,ingot:1},give:1},
   {id:'dragon_armor',label:'Драконяча броня',cost:{dragon_scale:4,ingot:4},give:1},
   {id:'shelter',label:'Похідне укриття',cost:{wood:5,plank:4},give:1},

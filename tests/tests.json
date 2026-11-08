@@ -340,12 +340,12 @@
     ],
     "description": "Verifies that placed chests can be opened and that their contents survive reloads and dimension changes.",
     "steps": [
-      "Enter Creative mode and select a chest block, then place it in the world",
+      "Collect eight planks or enter Creative mode, then craft or select a chest block and place it in the world",
       "Aim at the chest and press E or the mobile chest button",
       "Deposit all items and close the chest",
       "Reload or switch dimensions and return to the chest",
       "Open the same chest and withdraw the stored items"
     ],
-    "expected": "Only a targeted chest opens; deposit and withdraw actions transfer all item counts without loss, and chest contents persist independently for each chest and dimension."
+    "expected": "A chest can be crafted from eight planks or selected in Creative mode; only a targeted chest opens, deposit and withdraw transfer item counts without loss, and contents persist independently for each chest and dimension."
   }
 ]
