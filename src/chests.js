@@ -1,24 +1,32 @@
-export function depositBagIntoChest(bag, chest) {
-  const stored = { ...chest };
-  for (const [item, count] of Object.entries(bag)) {
-    if (!Number.isSafeInteger(count) || count < 0) throw new RangeError('item counts must be non-negative integers');
-    if (count > 0) stored[item] = (stored[item] || 0) + count;
+function validateCounts(items) {
+  for (const count of Object.values(items)) {
+    if (!Number.isSafeInteger(count) || count < 0) {
+      throw new RangeError('item counts must be non-negative safe integers');
+    }
   }
-  return { bag: {}, chest: stored };
+}
+
+function addCounts(target, source) {
+  const result = { ...target };
+  for (const [item, count] of Object.entries(source)) {
+    if (count === 0) continue;
+    const total = (result[item] || 0) + count;
+    if (!Number.isSafeInteger(total)) {
+      throw new RangeError('combined item count exceeds the safe integer range');
+    }
+    result[item] = total;
+  }
+  return result;
+}
+
+export function depositBagIntoChest(bag, chest) {
+  validateCounts(bag);
+  validateCounts(chest);
+  return { bag: {}, chest: addCounts(chest, bag) };
 }
 
 export function withdrawChestToBag(bag, chest) {
-  const nextBag = { ...bag };
-  for (const [item, count] of Object.entries(chest)) {
-    if (!Number.isSafeInteger(count) || count < 0) throw new RangeError('item counts must be non-negative integers');
-    if (count > 0) nextBag[item] = (nextBag[item] || 0) + count;
-  }
-  return { bag: nextBag, chest: {} };
-}
-
-export function breakChestContents(bag, chestStorage, chestId) {
-  const result = withdrawChestToBag(bag, chestStorage[chestId] || {});
-  const nextStorage = { ...chestStorage };
-  delete nextStorage[chestId];
-  return { bag: result.bag, chestStorage: nextStorage };
+  validateCounts(bag);
+  validateCounts(chest);
+  return { bag: addCounts(bag, chest), chest: {} };
 }

@@ -78,3 +78,24 @@ test('incoming damage applies the strongest available armor', () => {
   assert.equal(getIncomingDamage({ leather_armor: 1 }, true), 7);
   assert.equal(getIncomingDamage({ dragon_armor: 1 }, true), 4);
 });
+
+test('deposit rejects a combined count that exceeds the safe integer range', () => {
+  const bag = { wood: Number.MAX_SAFE_INTEGER };
+  const chest = { wood: 1 };
+  assert.throws(() => depositBagIntoChest(bag, chest), RangeError);
+  assert.deepEqual(bag, { wood: Number.MAX_SAFE_INTEGER });
+  assert.deepEqual(chest, { wood: 1 });
+});
+
+test('withdraw rejects a combined count that exceeds the safe integer range', () => {
+  const bag = { stone: Number.MAX_SAFE_INTEGER };
+  const chest = { stone: 1 };
+  assert.throws(() => withdrawChestToBag(bag, chest), RangeError);
+  assert.deepEqual(bag, { stone: Number.MAX_SAFE_INTEGER });
+  assert.deepEqual(chest, { stone: 1 });
+});
+
+test('transfers validate pre-existing destination counts before mutation', () => {
+  assert.throws(() => depositBagIntoChest({ wood: 1 }, { stone: -1 }), RangeError);
+  assert.throws(() => withdrawChestToBag({ wood: 1.5 }, { stone: 1 }), RangeError);
+});
