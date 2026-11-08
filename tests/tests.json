@@ -347,5 +347,24 @@
       "Open the same chest and withdraw the stored items"
     ],
     "expected": "A chest can be crafted from eight planks or selected in Creative mode; only a targeted chest opens, deposit and withdraw transfer item counts without loss, and contents persist independently for each chest and dimension."
+  },
+  {
+    "name": "Require the correct tools for logs and mineral ores",
+    "viewport": "mobile",
+    "covers": [
+      "axe requirement for wood logs",
+      "pickaxe requirement for mineral ores",
+      "tool crafting progression",
+      "creative mode bypasses tool requirements"
+    ],
+    "description": "Checks that survival mining uses the correct tool class while Creative mode remains unrestricted.",
+    "steps": [
+      "In Survival, aim at a tree log without an axe and try to break it",
+      "Craft an axe and break the log",
+      "Aim at a mineral ore without a pickaxe and try to break it",
+      "Craft a pickaxe and mine the ore",
+      "Switch to Creative mode and verify blocks can be mined without tools"
+    ],
+    "expected": "Survival mode blocks log harvesting without an axe and ore harvesting without a pickaxe; after crafting the required tool the block can be collected, while Creative mode bypasses both checks."
   }
 ]
