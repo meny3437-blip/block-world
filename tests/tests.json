@@ -444,5 +444,21 @@
       "Verify insufficient ore or coal does not consume any ingredients"
     ],
     "expected": "Copper, iron and gold smelting recipes consume exactly two matching ore plus one coal; iron equipment requires iron ingots, and failed crafting leaves the inventory unchanged."
+  },
+  {
+    "name": "Generate distinct seeded terrain profiles",
+    "viewport": "desktop",
+    "covers": [
+      "world seed affects terrain shape",
+      "same seed regenerates same terrain",
+      "neighboring terrain columns remain continuous"
+    ],
+    "description": "Verifies the world seed changes the procedural terrain profile without introducing sharp height discontinuities.",
+    "steps": [
+      "Start a new world with one seed and note the nearby hills",
+      "Start another world with a different seed",
+      "Return to the same seed and compare the terrain profile"
+    ],
+    "expected": "Different seeds produce different deterministic terrain while reusing the same seed reproduces the same profile."
   }
 ]

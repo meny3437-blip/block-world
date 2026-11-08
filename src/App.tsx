@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { addItemToBag, consumeItemFromBag, craftItemInBag } from './inventory.js';
 import { breakChestContents, depositBagIntoChest, withdrawChestToBag } from './chests.js';
 import { getAttackDamage, getIncomingDamage, selectWeapon } from './combat.js';
+import { terrainWave } from './terrain.js';
 
 type Kind = string;
 type BlockInfo = [id:string, label:string, color:number];
@@ -344,7 +345,7 @@ function App(){
     const cube=new THREE.BoxGeometry(1,1,1);const blocks=new Map<string,{mesh:THREE.Mesh;block:Block}>();
     const add=(b:Block)=>{const m=new THREE.Mesh(cube,mats[b.kind]);m.position.set(b.x,b.y,b.z);m.castShadow=false;m.receiveShadow=false;scene.add(m);blocks.set(key(b.x,b.y,b.z),{mesh:m,block:b});};
     const terrain=(x:number,z:number)=>{
-      const d=Math.sqrt(x*x+z*z), wave=Math.sin(x*.22)*1.7+Math.cos(z*.19)*1.4+Math.sin((x+z)*.12)*1.2;
+      const d=Math.sqrt(x*x+z*z), wave=terrainWave(x,z,worldSeed);
       const h=Math.floor(wave+(d>14?Math.sin(x*.43)*Math.cos(z*.37)*3:0));
       const desert=(hash(x+worldSeed,z)>.5&&x>8&&z>5), snowy=(x<-10&&z<-6), beach=d>15&&h<=-1;
       if(dimension==='nether')return {h:h-1,top:'netherrack',biome:'nether'};
