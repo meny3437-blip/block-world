@@ -360,6 +360,8 @@ function App(){
     const loadedChunks=new Set<string>(savedChunksRef.current||[]);
     loadedChunksRef.current=Array.from(loadedChunks);
     const waterChunks=new Set<string>();
+    const chunkQueue:{x:number;z:number}[]=[];
+    const queuedChunks=new Set<string>();
     const addChunkWater=(cx:number,cz:number)=>{const id=`${cx},${cz}`;if(waterChunks.has(id))return;waterChunks.add(id);for(let x=cx*CHUNK_SIZE;x<(cx+1)*CHUNK_SIZE;x++)for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){if(terrain(x,z).h < -1){const w=new THREE.Mesh(new THREE.BoxGeometry(1,.18,1),mats.water);w.position.set(x,-.42,z);scene.add(w);}}};
     const generateChunk=(cx:number,cz:number)=>{
       const chunkId=`${cx},${cz}`;addChunkWater(cx,cz);if(loadedChunks.has(chunkId))return;
@@ -385,7 +387,7 @@ function App(){
       loadedChunksRef.current=Array.from(loadedChunks);
       worldBlocksRef.current=Array.from(blocks.values()).map(v=>v.block);
     };
-    const loadChunksAround=(cx:number,cz:number)=>{for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)generateChunk(cx+dx,cz+dz);};
+    const loadChunksAround=(cx:number,cz:number)=>{for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){const x=cx+dx,z=cz+dz,id=`${x},${z}`;if(!loadedChunks.has(id)&&!queuedChunks.has(id)){queuedChunks.add(id);chunkQueue.push({x,z});}}};
     if(savedBlocksRef.current){savedBlocksRef.current.forEach(add);savedBlocksRef.current=null;}
     loadChunksAround(Math.floor(playerPositionRef.current.x/CHUNK_SIZE),Math.floor(playerPositionRef.current.z/CHUNK_SIZE));
     savedChunksRef.current=null;
@@ -481,7 +483,7 @@ function App(){
     renderer.domElement.addEventListener('mousedown',mouseAction);renderer.domElement.addEventListener('contextmenu',noMenu);
     renderer.domElement.addEventListener('click',()=>{if(matchMedia('(pointer:fine)').matches&&document.pointerLockElement!==renderer.domElement)renderer.domElement.requestPointerLock?.();});document.addEventListener('pointermove',pointer);
     const resize=()=>{camera.aspect=host.clientWidth/host.clientHeight;camera.updateProjectionMatrix();renderer.setSize(host.clientWidth,host.clientHeight);};window.addEventListener('resize',resize);
-    const animate=()=>{frame=requestAnimationFrame(animate);const now=performance.now();const dt=Math.min(.05,(now-last)/1000);last=now;elapsed+=dt;
+    const animate=()=>{frame=requestAnimationFrame(animate);const now=performance.now();const dt=Math.min(.05,(now-last)/1000);last=now;elapsed+=dt;if(chunkQueue.length){const next=chunkQueue.shift()!;queuedChunks.delete(`${next.x},${next.z}`);generateChunk(next.x,next.z);}
       yaw-=controls.current.lookX*.035;pitch-=controls.current.lookY*.035;controls.current.lookX=0;controls.current.lookY=0;
       const pads=navigator.getGamepads?.()||[];const pad=pads[0];if(pad){const dz=.16;const px=Math.abs(pad.axes[0]||0)>dz?pad.axes[0]:0;const py=Math.abs(pad.axes[1]||0)>dz?pad.axes[1]:0;controls.current.side=px;controls.current.forward=-py;yaw-=(pad.axes[2]||0)*dt*2.4;pitch+=(pad.axes[3]||0)*dt*2.1;const jumpHeld=!!pad.buttons[0]?.pressed;const breakHeld=!!pad.buttons[2]?.pressed;const placeHeld=!!pad.buttons[1]?.pressed;if(jumpHeld&&!padActionHeld.jump)worldRef.current?.jump();if(breakHeld&&!padActionHeld.break)worldRef.current?.breakBlock();if(placeHeld&&!padActionHeld.place)worldRef.current?.placeBlock();padActionHeld.jump=jumpHeld;padActionHeld.break=breakHeld;padActionHeld.place=placeHeld;}else{padActionHeld.jump=false;padActionHeld.break=false;padActionHeld.place=false;}pitch=Math.max(-1.2,Math.min(1.2,pitch));camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;
       const f=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),r=new THREE.Vector3(f.z,0,-f.x);const moveX=(-f.x*controls.current.forward+r.x*controls.current.side)*dt*5,moveZ=(-f.z*controls.current.forward+r.z*controls.current.side)*dt*5;const feetY=camera.position.y-1.72,headY=camera.position.y+.12;const hasBlock=(x:number,y:number,z:number)=>blocks.has(key(x,y,z));if(!collidesWithBlocks(camera.position.x+moveX,camera.position.z,feetY,headY,hasBlock))camera.position.x+=moveX;if(!collidesWithBlocks(camera.position.x,camera.position.z+moveZ,feetY,headY,hasBlock))camera.position.z+=moveZ;const groundY=terrain(Math.round(camera.position.x),Math.round(camera.position.z)).h+2.22;const vertical=stepVerticalMotion(camera.position.y,verticalVelocity,groundY,dt);camera.position.y=vertical.y;verticalVelocity=vertical.velocity;grounded=vertical.grounded;playerPositionRef.current={x:camera.position.x,y:camera.position.y,z:camera.position.z};const nextChunkX=Math.floor(camera.position.x/16),nextChunkZ=Math.floor(camera.position.z/16);if(nextChunkX!==activeChunkX||nextChunkZ!==activeChunkZ){activeChunkX=nextChunkX;activeChunkZ=nextChunkZ;loadChunksAround(activeChunkX,activeChunkZ);}
