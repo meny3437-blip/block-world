@@ -347,7 +347,7 @@
       "Open the same chest and withdraw the stored items",
       "Break a chest that contains items and confirm its contents return to the player and its old storage entry is cleared"
     ],
-    "expected": "A chest can be crafted from eight planks or selected in Creative mode; targeted interaction opens it, deposit and withdraw transfer item counts without loss, contents persist by chest and dimension, and breaking a chest returns its contents rather than orphaning them."
+    "expected": "A chest can be crafted from eight planks or selected in Creative mode; targeted interaction opens it, deposit and withdraw transfer item counts without loss, contents persist by chest and dimension, and breaking a chest returns its contents rather than orphaning them. Switching dimensions saves the outgoing chest data before loading the next dimension and does not overwrite it during effect cleanup."
   },
   {
     "name": "Track Ender Dragon health during the boss fight",
