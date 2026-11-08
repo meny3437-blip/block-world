@@ -27,6 +27,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: TypeScript type check
+        run: npm run typecheck
       - name: Run gameplay logic tests
         run: npm test
       - name: Validate manual QA plan JSON
