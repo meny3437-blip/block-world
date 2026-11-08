@@ -367,7 +367,6 @@ function App(){
     const addChunkWaterColumn=(cx:number,cz:number,x:number)=>{for(let z=cz*CHUNK_SIZE;z<(cz+1)*CHUNK_SIZE;z++){if(terrain(x,z).h < -1){const w=new THREE.Mesh(waterGeometry,mats.water);w.position.set(x,-.42,z);scene.add(w);}}};
     const generateChunk=(cx:number,cz:number,nextColumn=0)=>{
       const chunkId=chunkKey(cx,cz);
-      if(loadedChunks.has(chunkId))return true;
       const alreadyLoaded=loadedChunks.has(chunkId);
       const range=chunkColumnRange(cx,nextColumn,1);
       for(let x=range.start;x<range.end;x++){
