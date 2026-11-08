@@ -65,15 +65,17 @@
       "manual save and load",
       "inventory and survival state persistence",
       "built and broken block persistence",
-      "offline installable PWA shell"
+      "offline installable PWA shell",
+      "player world position persistence"
     ],
     "description": "Verifies progress is saved automatically and restored, including edited terrain and player state.",
     "steps": [
       "Break or place a block and collect a resource",
       "Wait for automatic save or use Save",
-      "Reload the game and use Load"
+      "Reload the game and use Load",
+      "Move away from spawn, save, reload the world and use Load"
     ],
-    "expected": "Saved inventory, survival stats and edited world blocks are restored from local device storage."
+    "expected": "Saved inventory, survival stats, edited world blocks and the player's last saved position are restored from local device storage."
   },
   {
     "name": "Use keyboard and connected gamepad controls",
