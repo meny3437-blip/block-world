@@ -238,5 +238,27 @@
       "Continue moving and interacting with the world"
     ],
     "expected": "The player returns to the Overworld spawn coordinates with full health and stamina, hunger and thirst are kept above zero, and the inventory is retained."
+  },
+  {
+    "name": "Cook meat and use food-specific nutrition",
+    "viewport": "mobile",
+    "covers": [
+      "raw meat mob drops",
+      "cooked meat recipe",
+      "coal ingredient validation",
+      "cooked meat prioritized when eating",
+      "food-specific hunger recovery",
+      "food-specific health recovery",
+      "inventory save and restore"
+    ],
+    "description": "Verifies raw meat can be cooked through crafting and cooked food restores more hunger and health than raw meat or berries.",
+    "steps": [
+      "Defeat a creature and collect raw meat",
+      "Collect coal and open the crafting panel",
+      "Craft cooked meat using one raw meat and one coal",
+      "Use the eat action and inspect hunger and health meters",
+      "Repeat with raw meat and berries to compare nutrition"
+    ],
+    "expected": "Cooked meat is crafted only when both ingredients are available and is consumed before raw meat or berries; cooked meat restores 48 hunger and 9 health, raw meat 30 hunger and 4 health, and berries 22 hunger and 2 health."
   }
 ]

@@ -125,7 +125,7 @@ type Stats = { health:number; hunger:number; thirst:number; stamina:number; day:
 type Bag = Record<string,number>;
 const STORE = 'block-world-survival-v2';
 const PLAYER_STORE = `${STORE}:player`;
-const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'М’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',bone:'Кістка',leather_armor:'Шкіряна броня',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
+const names: Record<string,string> = {wood:'Деревина',stone:'Камінь',dirt:'Земля',grass:'Трава',leaf:'Листя',sand:'Пісок',snow:'Сніг',ore:'Залізна руда',copper:'Мідь',iron:'Залізо',gold:'Золото',crystal:'Кристал',coal:'Вугілля',berry:'Ягоди',meat:'Сире м’ясо',cooked_meat:'Смажене м’ясо',plank:'Дошки',stick:'Палиці',torch:'Смолоскип',pickaxe:'Кам’яна кирка',axe:'Кам’яна сокира',wood_sword:'Дерев’яний меч',stone_sword:'Кам’яний меч',iron_sword:'Залізний меч',leather:'Шкіра',bone:'Кістка',leather_armor:'Шкіряна броня',shelter:'Укриття',campfire:'Багаття',fishingrod:'Вудка',bow:'Лук',ingot:'Злиток',
   oak_planks:'Дубові дошки',
   birch_planks:'Березові дошки',
   spruce_planks:'Ялинові дошки',
@@ -251,6 +251,7 @@ const recipes = [
   {id:'leather_armor',label:'Шкіряна броня',cost:{leather:4,ingot:1},give:1},
   {id:'shelter',label:'Похідне укриття',cost:{wood:5,plank:4},give:1},
   {id:'campfire',label:'Багаття',cost:{wood:3,stone:2},give:1},
+  {id:'cooked_meat',label:'Смажене м’ясо',cost:{meat:1,coal:1},give:1},
   {id:'fishingrod',label:'Вудка',cost:{stick:3,plank:2},give:1},
   {id:'bow',label:'Лук',cost:{stick:3,plank:2},give:1},
   {id:'ingot',label:'Металевий злиток',cost:{copper:2,coal:1},give:1}
@@ -291,7 +292,14 @@ function App(){
     if(!result.crafted){setNotice('Не вистачає матеріалів для крафту');return;}
     bagRef.current=result.bag;setBag(result.bag);setNotice('Створено: '+r.label);
   },[]);
-  const eat=useCallback(()=>{if(!consume('berry',1)&&!consume('meat',1)){setNotice('Немає їжі в рюкзаку');return;}setStats(s=>({...s,hunger:clamp(s.hunger+28),health:clamp(s.health+3)}));setNotice('Ти поїв. Голод зменшився');},[consume]);
+  const eat=useCallback(()=>{
+    const food=consume('cooked_meat',1)?'cooked_meat':consume('meat',1)?'meat':consume('berry',1)?'berry':null;
+    if(!food){setNotice('Немає їжі в рюкзаку');return;}
+    const nutrition=food==='cooked_meat'?48:food==='meat'?30:22;
+    const healing=food==='cooked_meat'?9:food==='meat'?4:2;
+    setStats(s=>({...s,hunger:clamp(s.hunger+nutrition),health:clamp(s.health+healing)}));
+    setNotice(food==='cooked_meat'?'Смажене м’ясо відновило сили!':food==='meat'?'Ти з’їв сире м’ясо':'Ти з’їв ягоди');
+  },[consume]);
   const drink=useCallback(()=>{setStats(s=>({...s,thirst:clamp(s.thirst+35)}));setNotice('Ти напився води');},[]);
   const save=useCallback(()=>{try{const data={bag:bagRef.current,stats:statsRef.current,worldSeed,mode,broken,blocks:worldBlocksRef.current,playerPosition:playerPositionRef.current};localStorage.setItem(storageKey,JSON.stringify(data));localStorage.setItem(PLAYER_STORE,JSON.stringify({bag:bagRef.current,stats:statsRef.current,mode}));setNotice('Світ та всі зміни збережено на цьому пристрої');}catch{setNotice('Не вдалося зберегти світ');}},[worldSeed,mode,broken,storageKey]);
   const load=useCallback(()=>{try{const raw=localStorage.getItem(storageKey);if(!raw){setNotice('Збереження ще немає');return;}const d=JSON.parse(raw);const profile=JSON.parse(localStorage.getItem(PLAYER_STORE)||'null');if(profile?.bag)setBag(profile.bag);else if(d.bag)setBag(d.bag);if(profile?.stats)setStats(profile.stats);else if(d.stats)setStats(d.stats);if(profile?.mode)setMode(profile.mode);else if(d.mode)setMode(d.mode);if(Array.isArray(d.blocks))savedBlocksRef.current=d.blocks;if(d.playerPosition&&[d.playerPosition.x,d.playerPosition.y,d.playerPosition.z].every(Number.isFinite))playerPositionRef.current={x:d.playerPosition.x,y:d.playerPosition.y,z:d.playerPosition.z};setBroken(d.broken||0);setWorldRevision(v=>v+1);setNotice('Світ, побудовані блоки та інвентар відновлено');}catch{setNotice('Помилка читання збереження');}},[storageKey]);
