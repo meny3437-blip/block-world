@@ -61,3 +61,19 @@ test('crafting rejects malformed costs before consuming ingredients', () => {
   assert.throws(() => craftItemInBag(bag, { wood: -1 }, 'plank', 1), RangeError);
   assert.deepEqual(bag, { wood: 4 });
 });
+
+test('hotbar assignment replaces only the selected slot immutably', async () => {
+  const { assignHotbarSlot } = await import('../src/inventory.js');
+  const original = ['grass','dirt','stone','wood','sand','snow','copper','iron','gold'];
+  const next = assignHotbarSlot(original, 3, 'leaf', ['grass','dirt','stone','wood','sand','snow','copper','iron','gold','leaf']);
+  assert.deepEqual(next, ['grass','dirt','stone','leaf','sand','snow','copper','iron','gold']);
+  assert.deepEqual(original, ['grass','dirt','stone','wood','sand','snow','copper','iron','gold']);
+});
+
+test('hotbar assignment rejects invalid slots and unknown items', async () => {
+  const { assignHotbarSlot } = await import('../src/inventory.js');
+  const hotbar = Array(9).fill('grass');
+  assert.throws(() => assignHotbarSlot(hotbar, 9, 'stone', ['stone']), RangeError);
+  assert.throws(() => assignHotbarSlot(hotbar, 0, 'diamond', ['stone']), RangeError);
+  assert.throws(() => assignHotbarSlot(Array(8).fill('grass'), 0, 'stone', ['stone']), RangeError);
+});

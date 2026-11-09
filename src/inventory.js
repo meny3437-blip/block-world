@@ -43,3 +43,10 @@ export function craftItemInBag(bag, cost, item, amount) {
   next[item] = addCount(next, item, amount);
   return { bag: next, crafted: true };
 }
+
+export function assignHotbarSlot(hotbar, slot, item, allowedItems) {
+  if (!Array.isArray(hotbar) || hotbar.length !== 9) throw new RangeError('hotbar must contain exactly nine slots');
+  if (!Number.isInteger(slot) || slot < 0 || slot >= 9) throw new RangeError('hotbar slot must be between 0 and 8');
+  if (typeof item !== 'string' || !allowedItems.includes(item)) throw new RangeError('item is not allowed in the hotbar');
+  return hotbar.map((current, index) => index === slot ? item : current);
+}
