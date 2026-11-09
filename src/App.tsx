@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { createEndscape } from './endscape.js';
 import { addItemToBag, consumeItemFromBag, craftItemInBag, assignHotbarSlot } from './inventory.js';
 import { breakChestContents, depositBagIntoChest, withdrawChestToBag } from './chests.js';
 import { getAttackDamage, getIncomingDamage, selectWeapon } from './combat.js';
@@ -345,7 +346,8 @@ function App(){
     const camera=new THREE.PerspectiveCamera(72,host.clientWidth/host.clientHeight,.1,150);camera.position.set(playerPositionRef.current.x,playerPositionRef.current.y,playerPositionRef.current.z);
     const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:mobileMode?'low-power':'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileMode?.85:1.4));renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);
     const hemi=new THREE.HemisphereLight(0xffffff,0x66734b,1.7);scene.add(hemi);
-    const sun=new THREE.DirectionalLight(0xfff0d2,1.8);sun.position.set(-15,28,12);scene.add(sun);
+    const sun=new THREE.DirectionalLight(dimension==='end'?0xb7a0ff:0xfff0d2,dimension==='end'?.85:1.8);sun.position.set(-15,28,12);scene.add(sun);
+    const endscape=dimension==='end'?createEndscape(scene,worldSeed,mobileMode):null;
     const mats:Record<Kind,THREE.Material>={
       grass:blockMaterial(0x68a944,1),dirt:blockMaterial(0x805331,2),
       stone:blockMaterial(0x858b91,3),wood:blockMaterial(0x986235,4),
@@ -533,7 +535,7 @@ function App(){
       });
       renderer.render(scene,camera);};
     animate();
-    return()=>{cancelAnimationFrame(frame);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window.removeEventListener('resize',resize);document.removeEventListener('pointermove',pointer);renderer.domElement.removeEventListener('mousedown',mouseAction);renderer.domElement.removeEventListener('contextmenu',noMenu);renderer.domElement.removeEventListener('wheel',wheel);renderer.dispose();cube.dispose();waterGeometry.dispose();mobGeometries.forEach(geometry=>geometry.dispose());mobMaterials.forEach(material=>material.dispose());Object.values(mats).forEach(m=>m.dispose());if(host.contains(renderer.domElement))host.removeChild(renderer.domElement);};
+    return()=>{cancelAnimationFrame(frame);window.removeEventListener('keydown',kd);window.removeEventListener('keyup',ku);window.removeEventListener('resize',resize);document.removeEventListener('pointermove',pointer);renderer.domElement.removeEventListener('mousedown',mouseAction);renderer.domElement.removeEventListener('contextmenu',noMenu);renderer.domElement.removeEventListener('wheel',wheel);endscape?.dispose();renderer.dispose();cube.dispose();waterGeometry.dispose();mobGeometries.forEach(geometry=>geometry.dispose());mobMaterials.forEach(material=>material.dispose());Object.values(mats).forEach(m=>m.dispose());if(host.contains(renderer.domElement))host.removeChild(renderer.domElement);};
   },[worldSeed,dimension,mode,worldRevision,addItem,consume,drink,eat,switchDimension]);
 
   const joystickStart=(e:React.PointerEvent<HTMLDivElement>)=>{e.currentTarget.setPointerCapture(e.pointerId);joystickMove(e);};
