@@ -397,11 +397,28 @@ function App(){
           const mineral=oreAtDepth(x,y,z,worldSeed);
           add({x,y,z,kind:mineral||'stone'});
         }
-        if(hash(x+worldSeed,z+99)>(mobileMode?.997:.985)&&Math.abs(x)+Math.abs(z)>5&&t.top==='grass'){
-          for(let y=1;y<=3;y++)add({x,y:t.h+y,z,kind:'wood'});
-          for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=2;dy<=4;dy++)if(Math.abs(dx)+Math.abs(dz)+Math.abs(dy-3)<5)add({x:x+dx,y:t.h+dy,z:z+dz,kind:'leaf'});
+        const treeRoll=hash(x+worldSeed,z+99);
+        if(Math.abs(x)+Math.abs(z)>5&&t.top==='grass'&&treeRoll>(mobileMode?.992:.975)){
+          const species=t.biome==='highland'?'spruce':hash(x+71,z+113)>.52?'birch':'oak';
+          const trunk=species==='spruce'?'spruce_log':species==='birch'?'birch_log':'oak_log';
+          const leaves=species==='spruce'?'spruce_leaves':species==='birch'?'birch_leaves':'oak_leaves';
+          const height=species==='spruce'?5+Math.floor(hash(x+31,z+7)*3):4+Math.floor(hash(x+17,z+43)*2);
+          for(let y=1;y<=height;y++)add({x,y:t.h+y,z,kind:trunk});
+          if(species==='spruce'){
+            for(let layer=0;layer<4;layer++){
+              const radius=layer===3?1:2-layer*.25;
+              for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)if(Math.abs(dx)<=radius&&Math.abs(dz)<=radius&&hash(x+dx*3+layer,z+dz*5+layer)>.08)add({x:x+dx,y:t.h+height-3+layer,z:z+dz,kind:leaves});
+            }
+          } else {
+            const crown=species==='birch'?2:2.5;
+            for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=-1;dy<=2;dy++)if((dx*dx+dz*dz<=crown*crown+1)&&(dy!==-1||hash(x+dx,z+dz)>.35))add({x:x+dx,y:t.h+height-1+dy,z:z+dz,kind:leaves});
+          }
         }
         if(t.biome==='desert'&&hash(x+42,z+12)>.94){for(let y=1;y<=2;y++)add({x,y:t.h+y,z,kind:'cactus'});}
+        if(t.biome==='highland'&&hash(x+201,z+83)>.992){
+          const radius=1+Math.floor(hash(x+8,z+9)*2);
+          for(let dx=-radius;dx<=radius;dx++)for(let dz=-radius;dz<=radius;dz++)if(dx*dx+dz*dz<=radius*radius&&hash(x+dx+300,z+dz+500)>.12)add({x:x+dx,y:t.h+1,z:z+dz,kind:'andesite'});
+        }
         if(hash(x+5,z+worldSeed)>.992&&t.h<2)add({x,y:t.h+1,z,kind:'ore'});
         }
       }
