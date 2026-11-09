@@ -277,7 +277,6 @@ function App(){
   const worldRef=useRef<{breakBlock:()=>void;placeBlock:()=>void;attack:()=>void;jump:()=>void;drink:()=>void;eat:()=>void;save:()=>void;usePortal:()=>void;openChest:()=>boolean}|null>(null);
   const selectedRef=useRef<Kind>('grass');
   const controls=useRef({forward:0,side:0,lookX:0,lookY:0});
-  const lookPointer=useRef({x:0,y:0});
   const [selected,setSelected]=useState<Kind>('grass');
   const hotbarItems:Kind[]=['grass','dirt','stone','wood','sand','snow','copper','iron','gold'];
   const [bag,setBag]=useState<Bag>({wood:3,stone:2,berry:5,meat:0,plank:0,stick:0,torch:0,ore:0});
