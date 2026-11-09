@@ -346,7 +346,7 @@ function App(){
     const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:mobileMode?'low-power':'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileMode?.85:1.4));renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);
     const hemi=new THREE.HemisphereLight(0xffffff,0x66734b,1.7);scene.add(hemi);
     const sun=new THREE.DirectionalLight(0xfff0d2,1.8);sun.position.set(-15,28,12);scene.add(sun);
-    const mats:Record<Kind,THREE.MeshStandardMaterial>={
+    const mats:Record<Kind,THREE.Material>={
       grass:blockMaterial(0x68a944,1),dirt:blockMaterial(0x805331,2),
       stone:blockMaterial(0x858b91,3),wood:blockMaterial(0x986235,4),
       leaf:blockMaterial(0x347b37,5),sand:blockMaterial(0xd7c17b,6),
