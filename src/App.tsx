@@ -60,6 +60,7 @@ const extraBlockCatalog:BlockInfo[] = [
   ['tuff','Туф',0x777e6b],
   ['calcite','Кальцит',0xdedbd0],
   ['dripstone','Натічний камінь',0x987a61],
+  ['glow_lichen','Світний лишайник',0x7bc58c],
   ['amethyst','Аметист',0x9366c4],
   ['clay','Глина',0x9baeb8],
   ['mud','Багнюка',0x574536],
@@ -406,7 +407,13 @@ function App(){
         if(t.h>=-1)add({x,y:t.h-1,z,kind:'dirt'});
         for(let depth=2;depth<=terrainDepth;depth++){
           const y=t.h-depth;
-          if(isCaveCell(x,y,z,worldSeed))continue;
+          if(isCaveCell(x,y,z,worldSeed)){
+            const caveDetail=hash(x+worldSeed*11+y*7,z-worldSeed*13-y*3);
+            if(caveDetail>(mobileMode?.998:.994))add({x,y,z,kind:'dripstone'});
+            else if(caveDetail>(mobileMode?.996:.989))add({x,y,z,kind:'amethyst'});
+            else if(caveDetail>(mobileMode?.992:.978))add({x,y,z,kind:'glow_lichen'});
+            continue;
+          }
           const mineral=oreAtDepth(x,y,z,worldSeed);
           add({x,y,z,kind:mineral||'stone'});
         }
