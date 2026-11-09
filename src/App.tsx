@@ -8,6 +8,7 @@ import { terrainWave } from './terrain.js';
 import { collidesWithBlocks, stepVerticalMotion, hasStepBlock } from './physics.js';
 import { chunkKey, chunkCoordinate, chunkNeighborhood, chunkColumnRange, visibleChunkKeys, chunkVisibilityDelta, prioritizeChunkQueue, CHUNK_SIZE } from './chunks.js';
 import { isCaveCell, oreAtDepth } from './caves.js';
+import { normalizeStickInput } from './mobile-controls.js';
 
 type Kind = string;
 type BlockInfo = [id:string, label:string, color:number];
@@ -592,10 +593,10 @@ function App(){
   },[worldSeed,dimension,mode,worldRevision,addItem,consume,drink,eat,switchDimension]);
 
   const joystickStart=(e:React.PointerEvent<HTMLDivElement>)=>{e.currentTarget.setPointerCapture(e.pointerId);joystickMove(e);};
-  const joystickMove=(e:React.PointerEvent<HTMLDivElement>)=>{const r=e.currentTarget.getBoundingClientRect();const dx=(e.clientX-(r.left+r.width/2))/(r.width*.34);const dy=(e.clientY-(r.top+r.height/2))/(r.height*.34);let x=Math.max(-1,Math.min(1,dx)),y=Math.max(-1,Math.min(1,dy));const length=Math.hypot(x,y);if(length<.12){x=0;y=0;}else if(length>1){x/=length;y/=length;}controls.current.side=x;controls.current.forward=-y;const knob=e.currentTarget.querySelector('.joystick-knob') as HTMLElement|null;knob?.style.setProperty('--stick-x',(x*27)+'px');knob?.style.setProperty('--stick-y',(y*27)+'px');};
+  const joystickMove=(e:React.PointerEvent<HTMLDivElement>)=>{const r=e.currentTarget.getBoundingClientRect();const dx=(e.clientX-(r.left+r.width/2))/(r.width*.34);const dy=(e.clientY-(r.top+r.height/2))/(r.height*.34);const {x,y}=normalizeStickInput(dx,dy,.12);controls.current.side=x;controls.current.forward=-y;const knob=e.currentTarget.querySelector('.joystick-knob') as HTMLElement|null;knob?.style.setProperty('--stick-x',(x*27)+'px');knob?.style.setProperty('--stick-y',(y*27)+'px');};
   const joystickEnd=(e?:React.PointerEvent<HTMLDivElement>)=>{controls.current.forward=0;controls.current.side=0;const knob=e?.currentTarget.querySelector('.joystick-knob') as HTMLElement|null;knob?.style.setProperty('--stick-x','0px');knob?.style.setProperty('--stick-y','0px');};
   const lookJoystickStart=(e:React.PointerEvent<HTMLDivElement>)=>{e.currentTarget.setPointerCapture(e.pointerId);lookJoystickMove(e);};
-  const lookJoystickMove=(e:React.PointerEvent<HTMLDivElement>)=>{const r=e.currentTarget.getBoundingClientRect();const dx=(e.clientX-(r.left+r.width/2))/(r.width*.34);const dy=(e.clientY-(r.top+r.height/2))/(r.height*.34);let x=Math.max(-1,Math.min(1,dx)),y=Math.max(-1,Math.min(1,dy));const length=Math.hypot(x,y);if(length<.1){x=0;y=0;}else if(length>1){x/=length;y/=length;}controls.current.lookX=x*1.35;controls.current.lookY=y*1.15;const knob=e.currentTarget.querySelector('.joystick-knob') as HTMLElement|null;knob?.style.setProperty('--stick-x',(x*27)+'px');knob?.style.setProperty('--stick-y',(y*27)+'px');};
+  const lookJoystickMove=(e:React.PointerEvent<HTMLDivElement>)=>{const r=e.currentTarget.getBoundingClientRect();const dx=(e.clientX-(r.left+r.width/2))/(r.width*.34);const dy=(e.clientY-(r.top+r.height/2))/(r.height*.34);const {x,y}=normalizeStickInput(dx,dy,.1);controls.current.lookX=x*1.35;controls.current.lookY=y*1.15;const knob=e.currentTarget.querySelector('.joystick-knob') as HTMLElement|null;knob?.style.setProperty('--stick-x',(x*27)+'px');knob?.style.setProperty('--stick-y',(y*27)+'px');};
   const lookJoystickEnd=(e?:React.PointerEvent<HTMLDivElement>)=>{controls.current.lookX=0;controls.current.lookY=0;const knob=e?.currentTarget.querySelector('.joystick-knob') as HTMLElement|null;knob?.style.setProperty('--stick-x','0px');knob?.style.setProperty('--stick-y','0px');};
   const hourLabel=Math.floor(stats.hour).toString().padStart(2,'0')+':'+Math.floor((stats.hour%1)*60).toString().padStart(2,'0');
   return <main className="game-shell survival-game">
