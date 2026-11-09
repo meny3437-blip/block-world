@@ -9,6 +9,7 @@ A mobile-first 3D voxel sandbox game built with React, Three.js, TypeScript and 
 - Seeded underground cave pockets and depth-based coal, copper, iron, crystal and gold veins.
 - Player movement physics with gravity, grounded jumping, terrain landing and collision against solid voxel blocks.
 - Five dimensions: Overworld, Nether, End, Sky Islands and Deep Ocean.
+- Cinematic End skyline with deterministic obsidian towers, emissive crystal beacons, a violet aurora and seeded starfields; mobile devices use a smaller scene budget.
 - More than 100 block types in the building catalog.
 - Survival and Creative modes with health, hunger, thirst, stamina, weather and a day/night cycle.
 - 27-slot inventory, hotbar, crafting recipes, resource collection and local autosave.
