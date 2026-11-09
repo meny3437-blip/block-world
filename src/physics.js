@@ -22,3 +22,10 @@ export function collidesWithBlocks(x, z, feetY, headY, hasBlock, radius = 0.28) 
   }
   return false;
 }
+
+// Detect a one-block step immediately ahead of the player's feet.
+export function hasStepBlock(feetY, hasBlock) {
+  if (!Number.isFinite(feetY) || typeof hasBlock !== 'function') return false;
+  const baseY = Math.floor(feetY + 0.5);
+  return Boolean(hasBlock(baseY) || hasBlock(baseY + 1));
+}

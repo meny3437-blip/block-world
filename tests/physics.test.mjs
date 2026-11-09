@@ -19,3 +19,13 @@ test('large frame times are capped to keep physics stable', () => {
   assert.equal(result.y, 1.955);
   assert.equal(result.grounded, false);
 });
+
+
+test('one-block stepping detects the block at foot level and one above', async () => {
+  const { hasStepBlock } = await import('../src/physics.js');
+  assert.equal(hasStepBlock(2.5, y => y === 3), true);
+  assert.equal(hasStepBlock(2.5, y => y === 4), true);
+  assert.equal(hasStepBlock(2.5, () => false), false);
+  assert.equal(hasStepBlock(Number.NaN, () => true), false);
+  assert.equal(hasStepBlock(2.5, null), false);
+});
