@@ -29,6 +29,19 @@ const extraBlockCatalog:BlockInfo[] = [
   ['dark_oak_log','Колода темного дуба',0x38291f],
   ['mangrove_log','Мангрова колода',0x59302d],
   ['cherry_log','Вишнева колода',0x5d393d],
+  ['dandelion','Кульбаба',0xf3d34a],
+  ['poppy','Мак',0xd7443e],
+  ['blue_orchid','Синя орхідея',0x648fe0],
+  ['allium','Декоративна цибуля',0xc17bd7],
+  ['azure_bluet','Блакитна квітка',0xe6e2d9],
+  ['cornflower','Волошка',0x4778d5],
+  ['lily_of_the_valley','Конвалія',0xeceee5],
+  ['sunflower','Соняшник',0xe8bd35],
+  ['tall_grass','Висока трава',0x568f3d],
+  ['fern','Папороть',0x3d7844],
+  ['red_mushroom','Червоний гриб',0xc8493d],
+  ['brown_mushroom','Коричневий гриб',0x8b6547],
+  ['dead_bush','Сухий кущ',0x8a7047],
   ['oak_leaves','Дубове листя',0x477d32],
   ['birch_leaves','Березове листя',0x7cae45],
   ['spruce_leaves','Ялинова хвоя',0x315b43],
@@ -414,7 +427,23 @@ function App(){
             for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=-1;dy<=2;dy++)if((dx*dx+dz*dz<=crown*crown+1)&&(dy!==-1||hash(x+dx,z+dz)>.35))add({x:x+dx,y:t.h+height-1+dy,z:z+dz,kind:leaves});
           }
         }
+        const flora=hash(x+worldSeed*3,z-worldSeed*5);
+        if(t.top==='grass'&&Math.abs(x)+Math.abs(z)>3){
+          if(t.biome==='forest'||t.biome==='highland'||t.biome==='tundra'){
+            const flower=flora>(mobileMode?.996:.987);
+            if(flower){
+              const flowers=['dandelion','poppy','blue_orchid','allium','azure_bluet','cornflower','lily_of_the_valley'];
+              const choice=flowers[Math.floor(hash(x+81,z+117)*flowers.length)];
+              add({x,y:t.h+1,z,kind:choice as Kind});
+            }else if(hash(x+313,z+719)>(mobileMode?.993:.982)){
+              add({x,y:t.h+1,z,kind:flora>.5?'tall_grass':'fern'});
+            }else if(t.biome==='forest'&&hash(x+411,z+37)>(mobileMode?.997:.991)){
+              add({x,y:t.h+1,z,kind:hash(x+7,z+91)>.5?'red_mushroom':'brown_mushroom'});
+            }
+          }
+        }
         if(t.biome==='desert'&&hash(x+42,z+12)>.94){for(let y=1;y<=2;y++)add({x,y:t.h+y,z,kind:'cactus'});}
+        if(t.biome==='desert'&&hash(x+777,z+333)>(mobileMode?.997:.99))add({x,y:t.h+1,z,kind:'dead_bush'});
         if(t.biome==='highland'&&hash(x+201,z+83)>.992){
           const radius=1+Math.floor(hash(x+8,z+9)*2);
           for(let dx=-radius;dx<=radius;dx++)for(let dz=-radius;dz<=radius;dz++)if(dx*dx+dz*dz<=radius*radius&&hash(x+dx+300,z+dz+500)>.12)add({x:x+dx,y:t.h+1,z:z+dz,kind:'andesite'});
