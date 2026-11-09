@@ -272,7 +272,7 @@ const clamp=(n:number)=>Math.max(0,Math.min(100,n));
 const key=(x:number,y:number,z:number)=>`${x},${y},${z}`;
 const hash=(x:number,z:number)=>{const v=Math.sin(x*127.1+z*311.7)*43758.5453;return v-Math.floor(v);};
 const createBlockTexture=(color:number,seed:number)=>{const canvas=document.createElement('canvas');canvas.width=16;canvas.height=16;const ctx=canvas.getContext('2d');if(!ctx)return null;const r=(color>>16)&255,g=(color>>8)&255,b=color&255;ctx.fillStyle='rgb('+r+','+g+','+b+')';ctx.fillRect(0,0,16,16);for(let i=0;i<92;i++){const n=hash(i+seed,seed*3+i*7);const shade=Math.round((n-.5)*54);ctx.fillStyle='rgba('+(shade>0?'255,255,255':'0,0,0')+','+(Math.abs(shade)/150)+')';ctx.fillRect(Math.floor(hash(i,seed+11)*16),Math.floor(hash(i+31,seed+19)*16),1,1);}const texture=new THREE.CanvasTexture(canvas);texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestMipmapNearestFilter;texture.generateMipmaps=true;texture.colorSpace=THREE.SRGBColorSpace;return texture;};
-const blockMaterial=(color:number,seed:number)=>new THREE.MeshStandardMaterial({map:createBlockTexture(color,seed),roughness:1,metalness:0});
+const blockMaterial=(color:number,seed:number)=>new THREE.MeshLambertMaterial({map:createBlockTexture(color,seed)});
 
 function App(){
   const mount=useRef<HTMLDivElement>(null);
@@ -339,11 +339,11 @@ function App(){
     const host=mount.current;if(!host)return;
     const mobileMode=window.matchMedia('(max-width: 799px)').matches;
     const renderRadius=mobileMode?0:1;
-    const terrainDepth=mobileMode?6:12;
+    const terrainDepth=mobileMode?2:12;
     setBossHealth(dimension==='end'?240:null);
     const scene=new THREE.Scene();const skyColor=dimension==='nether'?0x542522:dimension==='end'?0x171323:dimension==='sky'?0x9bd8f2:dimension==='ocean'?0x367fa8:0x8cc9f1;const sceneBackground=new THREE.Color(skyColor);scene.background=sceneBackground;scene.fog=new THREE.Fog(skyColor,25,76);
     const camera=new THREE.PerspectiveCamera(72,host.clientWidth/host.clientHeight,.1,150);camera.position.set(playerPositionRef.current.x,playerPositionRef.current.y,playerPositionRef.current.z);
-    const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileMode?1:1.4));renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);
+    const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:mobileMode?'low-power':'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobileMode?.85:1.4));renderer.setSize(host.clientWidth,host.clientHeight);host.appendChild(renderer.domElement);
     const hemi=new THREE.HemisphereLight(0xffffff,0x66734b,1.7);scene.add(hemi);
     const sun=new THREE.DirectionalLight(0xfff0d2,1.8);sun.position.set(-15,28,12);scene.add(sun);
     const mats:Record<Kind,THREE.MeshStandardMaterial>={
@@ -395,7 +395,7 @@ function App(){
           const mineral=oreAtDepth(x,y,z,worldSeed);
           add({x,y,z,kind:mineral||'stone'});
         }
-        if(hash(x+worldSeed,z+99)>.985&&Math.abs(x)+Math.abs(z)>5&&t.top==='grass'){
+        if(hash(x+worldSeed,z+99)>(mobileMode?.997:.985)&&Math.abs(x)+Math.abs(z)>5&&t.top==='grass'){
           for(let y=1;y<=3;y++)add({x,y:t.h+y,z,kind:'wood'});
           for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++)for(let dy=2;dy<=4;dy++)if(Math.abs(dx)+Math.abs(dz)+Math.abs(dy-3)<5)add({x:x+dx,y:t.h+dy,z:z+dz,kind:'leaf'});
         }
